@@ -5,7 +5,7 @@ from __future__ import print_function, division
 import pygame
 import pygame.joystick
 from operator import add, div
-from math import atan2, degrees
+from math import atan2, degrees, radians, sin, cos
 import os
 
 # Pygame prints lots of internal debug, so redirect stdout to /dev/null
@@ -56,6 +56,9 @@ class Sprite(pygame.sprite.Sprite):
 			self.image, self.mask = self._img[0]
 	def _setrot(self):
 		self._rot = int(degrees(atan2(*self._move)) - 90) % 360
+	def set_speed(self, speed):
+		r = radians(self._rot)
+		self._move = [sin(r) * speed, cos(r) * speed]
 	def _newimg(self, force=False):
 		if self._animate:
 			self._anim += 1
@@ -68,7 +71,7 @@ class Sprite(pygame.sprite.Sprite):
 	def update(self):
 		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
 		if self._move:
-			self._pathify(z)
+			#self._pathify(z)
 			self._pos = map(add, self._pos, self._move)
 		self._newimg()
 		x, y = map(int, self._pos)
@@ -78,12 +81,22 @@ class Sprite(pygame.sprite.Sprite):
 
 class Car(Sprite):
 	_sprite_filenames = ("car_red.png",)
+	max_speed = 10
 	def __init__(self, x, y):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
 	def update(self):
 		axis_value = joysticks[0].get_axis(0)
-		print(axis_value, file=stdout)
-		self._rot = (90 + int(360*axis_value)) % 360
+		#print(axis_value, file=stdout)
+		self._rot = int(360*axis_value) % 360
+
+		axis_value = joysticks[0].get_axis(13)
+		print (axis_value, file=stdout)
+		speed = (axis_value * self.max_speed)
+		if speed < 0:
+			speed = 0
+		self.set_speed(speed)
+		print("Speed={:>6.3f}".format(speed), file=stdout)
+
 		Sprite.update(self)
 
 
@@ -101,6 +114,7 @@ cars.add(Car(800, 600))
 
 done = False
 while not done:
+	screen.blit(background, (0, 0))
 	# EVENT PROCESSING STEP
 	for event in pygame.event.get(): # User did something
 		if event.type == pygame.QUIT: # If user clicked close
