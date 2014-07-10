@@ -3,23 +3,22 @@
 from __future__ import print_function, division
 
 import pygame
-from pygame.locals import *
 import pygame.joystick
-from operator import add, sub, mul, div
-from math import hypot, atan2, degrees, ceil
-from time import sleep
+from operator import add, div
+from math import atan2, degrees
 import os
 
 # Pygame prints lots of internal debug, so redirect stdout to /dev/null
 stdout_fd = os.dup(1)
 stdout = os.fdopen(stdout_fd, "w")
-fd = os.open( "/dev/null", os.O_WRONLY )
+null_fd = os.open("/dev/null", os.O_WRONLY)
+os.dup2(null_fd, 1)
 
 pygame.init()
 clock = pygame.time.Clock()
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
- 
+
 screen = pygame.display.set_mode([1600, 1200])
 pygame.display.set_caption("TROLOLO joysticks!!!1")
 
@@ -33,7 +32,7 @@ def imgload(names, step=1):
 			def rot(deg):
 				i = pygame.transform.rotate(img, deg)
 				return i, pygame.mask.from_surface(i)
-			_images[name] = dict([(deg, rot(deg)) for deg in range(0, 360, step or 360)])
+			_images[name] = {deg: rot(deg) for deg in range(0, 360, step or 360)}
 	return [_images[name] for name in names]
 
 
@@ -84,7 +83,7 @@ class Car(Sprite):
 	def update(self):
 		axis_value = joysticks[0].get_axis(0)
 		print(axis_value, file=stdout)
-		self._rot = (90 + int(360*axis_value)) %360
+		self._rot = (90 + int(360*axis_value)) % 360
 		Sprite.update(self)
 
 
@@ -98,27 +97,26 @@ pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
 things = [cars]
-cars.add(Car(800,600))
+cars.add(Car(800, 600))
 
 done = False
-while done==False:
+while not done:
 	# EVENT PROCESSING STEP
 	for event in pygame.event.get(): # User did something
-			if event.type == pygame.QUIT: # If user clicked close
-					done=True # Flag that we are done so we exit this loop
-			elif event.type == KEYDOWN and event.key == K_ESCAPE:
-					done=True
+		if event.type == pygame.QUIT: # If user clicked close
+				done = True # Flag that we are done so we exit this loop
+		elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+				done = True
 
 	for j in joysticks:
 		j.init()
 		#print(j.get_name(), file=stdout)
-		for i in range( j.get_numaxes() ):
-			os.dup2(fd, 1)
-			axis = j.get_axis( i )
+		for i in range(j.get_numaxes()):
+			axis = j.get_axis(i)
 			#print("Axis {} value: {:>6.3f}".format(i, axis), file=stdout)
-		for i in range( j.get_numbuttons() ):
-			button = j.get_button( i )
-			#print("Button {:>2} value: {}".format(i, button), file=stdout )
+		for i in range(j.get_numbuttons()):
+			button = j.get_button(i)
+			#print("Button {:>2} value: {}".format(i, button), file=stdout)
 
 	for thing in things:
 		thing.update()
