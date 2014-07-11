@@ -150,8 +150,9 @@ class Car(Sprite):
 			self.death()
 
 		axis_value = self.J.get_axis(self.j['turn_axis'])
-		self._turn = -int(axis_value*self.max_turn)
-		self.try_set_rotate((self._rot + self._turn) % 360)
+		if self._speed != 0:
+			self._turn = -int(axis_value*self.max_turn)
+			self.try_set_rotate((self._rot + self._turn) % 360)
 
 		accel_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2
 		retard_value = (1+self.J.get_axis(self.j['retard_axis']))/2
