@@ -88,15 +88,16 @@ class Car(Sprite):
 	def __init__(self, x, y, player):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
 		self.player=player
-		self.j=player.joystick
+		self.j=player.joystick # Joystick settings
+		self.J=joysticks[self.j['joystick_id']] # (pygame) Joystick object
 		self._light, = imgload(["light.png"])
 
 	def update(self):
-		axis_value = joysticks[self.j['joystick_id']].get_axis(self.j['turn_axis'])
+		axis_value = self.J.get_axis(self.j['turn_axis'])
 		self._turn = -int(axis_value*self.max_turn)
 		self._rot = (self._rot + self._turn) % 360
 
-		axis_value = (1+joysticks[self.j['joystick_id']].get_axis(self.j['accelerate_axis']))/2 - (1+joysticks[self.j['joystick_id']].get_axis(self.j['retard_axis']))/2
+		axis_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2 - (1+self.J.get_axis(self.j['retard_axis']))/2
 		print("Axis value={:>6.3f}".format(axis_value))
 		self._accel = (axis_value * self.max_accel) - self.friction
 		self._speed += self._accel
