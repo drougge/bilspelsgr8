@@ -28,7 +28,7 @@ def imgload(names, step=1):
 		if name not in _images:
 			img = pygame.image.load(name).convert_alpha()
 			def rot(deg):
-				i = pygame.transform.rotate(img, deg)
+				i = pygame.transform.rotozoom(img, deg, 1)
 				return i, pygame.mask.from_surface(i)
 			_images[name] = {deg: rot(deg) for deg in range(0, 360, step or 360)}
 	return [_images[name] for name in names]
