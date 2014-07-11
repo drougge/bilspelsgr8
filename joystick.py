@@ -15,6 +15,7 @@ pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
 pygame.font.init()
 clock = pygame.time.Clock()
+collcmp = pygame.sprite.collide_mask
 
 screen = pygame.display.set_mode([1600, 1200])
 pygame.display.set_caption(settings['game']['name'])
@@ -91,6 +92,8 @@ class Sprite(pygame.sprite.Sprite):
 			new_pos = map(add, self._pos, self._move)
 			x, y = map(int, new_pos)
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
+				effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
+				self._health -= abs(self._speed)
 				if self._stuck:
 					new_pos = self._pos
 				else:
@@ -142,6 +145,7 @@ class Car(Sprite):
 			self.image, self.mask = self._img[0]
 
 	def death(self):
+		effects.add(Effect(self._pos, "R.I.P.", 120, self.player.color))
 		Sprite.kill(self)
 
 	def update(self):
@@ -149,8 +153,9 @@ class Car(Sprite):
 			self.death()
 
 		axis_value = self.J.get_axis(self.j['turn_axis'])
-		self._turn = -int(axis_value*self.max_turn)
-		self.try_set_rotate((self._rot + self._turn) % 360)
+		if self._speed != 0:
+			self._turn = -int(axis_value*self.max_turn)
+			self.try_set_rotate((self._rot + self._turn) % 360)
 
 		accel_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2
 		retard_value = (1+self.J.get_axis(self.j['retard_axis']))/2
@@ -198,6 +203,13 @@ class Car(Sprite):
 		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
 		surface.blit(visible, blt_pos)
 
+	def bump(self, force):
+		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
+		self._health -= force
+		self._pos = map(sub, self._pos, self._move)
+		self._speed = 0
+		self._move = [0, 0]
+
 class SportyCar(Car):
 	max_speed = 10
 	reverse_speed = 1
@@ -213,6 +225,23 @@ class CheapCar(Car):
 	friction = 0.1
 
 car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) and Car in t.mro() and t is not Car}
+
+class Effect(pygame.sprite.Sprite):
+	def __init__(self, pos, text, lifetime, color):
+		pygame.sprite.Sprite.__init__(self)
+		self._pos = pos
+		self._lifetime = lifetime
+		render = verdana16.render(text, True, color, (0, 0, 0))
+		self.rect = render.get_rect(left=pos[0], top=pos[1])
+		self.image = render
+		self.image.set_alpha(255)
+		self.image.set_colorkey((0, 0, 0))
+	def update(self):
+		step = 255/self._lifetime
+		alpha = self.image.get_alpha() - step
+		if alpha <= 0:
+			self.kill()
+		self.image.set_alpha(alpha)
 
 class Player():
 	def __init__(self, settings, pos):
@@ -251,11 +280,12 @@ map_mask = pygame.mask.from_surface(map_mask)
 pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
+effects = pygame.sprite.RenderClear([])
 players = []
 for pos, player in enumerate(settings['players']):
 	players.append(Player(player, pos))
 
-things = [cars]
+things = [cars, effects]
 
 done = False
 while not done:
@@ -278,6 +308,12 @@ while not done:
 		car.draw_light(screen)
 	for thing in things:
 		thing.draw(screen)
+
+	coll = list(cars)
+	for e in list(cars):
+		for c in pygame.sprite.spritecollide(e, coll, False, collcmp):
+			if c is not e:
+				c.bump(5)
 
 	clock.tick(60)
 	pygame.display.flip()
