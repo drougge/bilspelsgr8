@@ -77,21 +77,33 @@ class Sprite(pygame.sprite.Sprite):
 
 class Car(Sprite):
 	_sprite_filenames = ("car_red.png",)
-	max_speed = 10
+	max_speed = 20
+	_speed = 0
+	max_accel = 1
+	_accel = 0
+	max_turn = 5
+	_turn = 0
+	friction = 0.3
+
 	def __init__(self, x, y):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
 	def update(self):
 		axis_value = joysticks[0].get_axis(0)
-		#print(axis_value)
-		self._rot = int(360*axis_value) % 360
+		self._turn = -int(axis_value*self.max_turn)
+		self._rot = (self._rot + self._turn) % 360
 
-		axis_value = joysticks[0].get_axis(13)
-		print(axis_value)
-		speed = (axis_value * self.max_speed)
-		if speed < 0:
-			speed = 0
-		self.set_speed(speed)
-		print("Speed={:>6.3f}".format(speed))
+		axis_value = (1+joysticks[0].get_axis(13))/2 - (1+joysticks[0].get_axis(12))/2
+		print("Axis value={:>6.3f}".format(axis_value))
+		self._accel = (axis_value * self.max_accel) - self.friction
+		self._speed += self._accel
+		if(self._speed > self.max_speed):
+			self._speed = self.max_speed
+		if(self._speed < 0):
+			self._speed = 0 # No reversing!
+		self.set_speed(self._speed)
+
+		print("Accel={:>6.3f}".format(self._accel))
+		print("Speed={:>6.3f}".format(self._speed))
 
 		Sprite.update(self)
 

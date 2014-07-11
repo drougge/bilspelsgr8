@@ -6,4 +6,5 @@ players:
       joystick_id: 0
       turn_axis: 0
       accelerate_axis: 13
+      retard_axis: 12
   - name: barfoo
