@@ -69,13 +69,13 @@ class Sprite(pygame.sprite.Sprite):
 		self._img = self._imgs[self._cur_img]
 		self.image, self.mask = self._img[self._rot]
 	def try_set_rotate(self, rot):
-		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
+		image, mask = self._imgs[0][rot]
+		z = map(div, map(add, image.get_size(), self._offset), (2, 2))
 		x, y = map(int, self._pos)
 		xz, yz = z
 		xo, yo = self._offset
 		rect = (x - xz + xo, y - yz + yo)
-		print(self._imgs[0][int(rot)][1], rect)
-		if not map_mask.overlap(self._imgs[0][rot][1], rect):
+		if not map_mask.overlap(mask, rect):
 			self._rot = rot
 	def update(self):
 		self._newimg()
