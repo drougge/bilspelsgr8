@@ -77,14 +77,14 @@ class Sprite(pygame.sprite.Sprite):
 
 class Car(Sprite):
 	_sprite_filenames = ("car_white.png",)
-	max_speed = 20
+	max_speed = 10
 	reverse_speed = 1
 	_speed = 0
-	max_accel = 1
+	max_accel = .2
 	_accel = 0
 	max_turn = 5
 	_turn = 0
-	friction = 0.3
+	friction = 0.1
 
 	def __init__(self, x, y, player):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
