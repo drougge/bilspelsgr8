@@ -79,14 +79,10 @@ class Sprite(pygame.sprite.Sprite):
 
 class Car(Sprite):
 	_sprite_filenames = ("car_white.png",)
-	max_speed = 10
-	reverse_speed = 1
 	_speed = 0
-	max_accel = .2
 	_accel = 0
-	max_turn = 5
 	_turn = 0
-	friction = 0.1
+	_health = 100
 
 	def __init__(self, x, y, player):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
@@ -119,7 +115,11 @@ class Car(Sprite):
 		self._turn = -int(axis_value*self.max_turn)
 		self._rot = (self._rot + self._turn) % 360
 
-		axis_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2 - (1+self.J.get_axis(self.j['retard_axis']))/2
+		accel_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2
+		retard_value = (1+self.J.get_axis(self.j['retard_axis']))/2
+		if accel_value > 0.5 and retard_value > 0.5:
+			self._health -= .1
+		axis_value = accel_value - retard_value
 		print("Axis value={:>6.3f}".format(axis_value))
 		self._accel = (axis_value * self.max_accel) - self.friction
 
@@ -154,20 +154,44 @@ class Car(Sprite):
 		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
 		surface.blit(visible, blt_pos)
 
+class SportyCar(Car):
+	max_speed = 10
+	reverse_speed = 1
+	max_accel = .2
+	max_turn = 5
+	friction = 0.1
+
+class CheapCar(Car):
+	max_speed = 4
+	reverse_speed = 1
+	max_accel = .15
+	max_turn = 7
+	friction = 0.1
+
+car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) and Car in t.mro() and t is not Car}
+
 class Player():
 	def __init__(self, settings, pos):
 		for key, value in settings.iteritems():
 			setattr(self, key, value)
-		self.car = Car(800, 600, self)
+		car_type = car_types.get(self.car, CheapCar)
+		self.car = car_type(800, 600, self)
+		print(self.car)
 		cars.add(self.car)
-		render = verdana16.render(self.name, True, self.color)
+		s = "%s (%d %%)" % (self.name, 100)
+		render = verdana16.render(s, True, self.color)
 		positions = {
 			0: [10, 10],
 			1: [screen.get_size()[0]-10-render.get_size()[0], 10],
 			2: [10, screen.get_size()[1]-10-render.get_size()[1]],
 			3: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]]
 		}
-		self.draw = partial(screen.blit, render, positions[pos])
+		self._draw = partial(screen.blit, dest=positions[pos])
+	
+	def draw(self):
+		s = "%s (%d %%)" % (self.name, self.car._health)
+		render = verdana16.render(s, True, self.color)
+		self._draw(render)
 
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
