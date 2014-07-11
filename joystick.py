@@ -128,7 +128,7 @@ class Player():
 		self.car = Car(800,600,self)
 		cars.add(self.car)
 
-	def draw(self, offset):
+	def draw(self, pos):
 		font = pygame.font.SysFont("Verdana", 16, True)
 		render = font.render(self.name, True, self.color)
 		positions = {
@@ -137,7 +137,7 @@ class Player():
 			2: [10, screen.get_size()[1]-10-render.get_size()[1]],
 			3: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]]
 		}
-		screen.blit(render, positions[offset])
+		screen.blit(render, positions[pos])
 
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
