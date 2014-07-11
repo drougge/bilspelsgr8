@@ -6,13 +6,7 @@ import pygame
 import pygame.joystick
 from operator import add, div
 from math import atan2, degrees, radians, sin, cos
-import os
-
-# Pygame prints lots of internal debug, so redirect stdout to /dev/null
-stdout_fd = os.dup(1)
-stdout = os.fdopen(stdout_fd, "w")
-null_fd = os.open("/dev/null", os.O_WRONLY)
-os.dup2(null_fd, 1)
+from workarounds import print
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -86,16 +80,16 @@ class Car(Sprite):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
 	def update(self):
 		axis_value = joysticks[0].get_axis(0)
-		#print(axis_value, file=stdout)
+		#print(axis_value)
 		self._rot = int(360*axis_value) % 360
 
 		axis_value = joysticks[0].get_axis(13)
-		print (axis_value, file=stdout)
+		print(axis_value)
 		speed = (axis_value * self.max_speed)
 		if speed < 0:
 			speed = 0
 		self.set_speed(speed)
-		print("Speed={:>6.3f}".format(speed), file=stdout)
+		print("Speed={:>6.3f}".format(speed))
 
 		Sprite.update(self)
 
@@ -124,13 +118,13 @@ while not done:
 
 	for j in joysticks:
 		j.init()
-		#print(j.get_name(), file=stdout)
+		#print(j.get_name())
 		for i in range(j.get_numaxes()):
 			axis = j.get_axis(i)
-			#print("Axis {} value: {:>6.3f}".format(i, axis), file=stdout)
+			#print("Axis {} value: {:>6.3f}".format(i, axis))
 		for i in range(j.get_numbuttons()):
 			button = j.get_button(i)
-			#print("Button {:>2} value: {}".format(i, button), file=stdout)
+			#print("Button {:>2} value: {}".format(i, button))
 
 	for thing in things:
 		thing.update()
@@ -139,4 +133,4 @@ while not done:
 	clock.tick(60)
 	pygame.display.flip()
 
-print("Why you quit already? :(", file=stdout)
+print("Why you quit already? :(")
