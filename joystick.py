@@ -78,6 +78,7 @@ class Sprite(pygame.sprite.Sprite):
 class Car(Sprite):
 	_sprite_filenames = ("car_white.png",)
 	max_speed = 20
+	reverse_speed = 1
 	_speed = 0
 	max_accel = 1
 	_accel = 0
@@ -100,11 +101,21 @@ class Car(Sprite):
 		axis_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2 - (1+self.J.get_axis(self.j['retard_axis']))/2
 		print("Axis value={:>6.3f}".format(axis_value))
 		self._accel = (axis_value * self.max_accel) - self.friction
+
+		if((self.J.get_button(self.j['reverse_button']))):
+			if(self._speed <= 0):
+				self._speed = -self.reverse_speed
+				self._accel = 0
+			else:
+				pass # Stop before you reverse!
+
 		self._speed += self._accel
 		if(self._speed > self.max_speed):
 			self._speed = self.max_speed
 		if(self._speed < 0):
-			self._speed = 0 # No reversing!
+			if(not (self.J.get_button(self.j['reverse_button']))):
+				self._speed = 0 # Stop unintentional reversing
+
 		self.set_speed(self._speed)
 
 		print("Accel={:>6.3f}".format(self._accel))
