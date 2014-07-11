@@ -72,12 +72,24 @@ class Sprite(pygame.sprite.Sprite):
 			self._cur_img %= len(self._imgs)
 		self._img = self._imgs[self._cur_img]
 		self.image, self.mask = self._img[self._rot]
+	def try_set_rotate(self, rot):
+		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
+		x, y = map(int, self._pos)
+		xz, yz = z
+		xo, yo = self._offset
+		rect = (x - xz + xo, y - yz + yo)
+		print(self._imgs[0][int(rot)][1], rect)
+		if not map_mask.overlap(self._imgs[0][rot][1], rect):
+			self._rot = rot
 	def update(self):
 		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
+		xz, yz = z
+		xo, yo = self._offset
 		if self._move:
 			#self._pathify(z)
 			new_pos = map(add, self._pos, self._move)
-			if map_mask.overlap(self.mask, self.rect[:2]):
+			x, y = map(int, new_pos)
+			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
 				self._speed = 0
 				self.set_speed(0)
 				if self._stuck:
@@ -90,8 +102,6 @@ class Sprite(pygame.sprite.Sprite):
 			self._pos = new_pos
 		self._newimg()
 		x, y = map(int, self._pos)
-		xz, yz = z
-		xo, yo = self._offset
 		self.rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
 
 class Car(Sprite):
@@ -140,7 +150,7 @@ class Car(Sprite):
 
 		axis_value = self.J.get_axis(self.j['turn_axis'])
 		self._turn = -int(axis_value*self.max_turn)
-		self._rot = (self._rot + self._turn) % 360
+		self.try_set_rotate((self._rot + self._turn) % 360)
 
 		accel_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2
 		retard_value = (1+self.J.get_axis(self.j['retard_axis']))/2
