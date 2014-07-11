@@ -15,6 +15,7 @@ pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
 pygame.font.init()
 clock = pygame.time.Clock()
+collcmp = pygame.sprite.collide_mask
 
 screen = pygame.display.set_mode([1600, 1200])
 pygame.display.set_caption(settings['game']['name'])
@@ -200,6 +201,12 @@ class Car(Sprite):
 		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
 		surface.blit(visible, blt_pos)
 
+	def bump(self, force):
+		self._health -= force
+		self._pos = map(sub, self._pos, self._move)
+		self._speed = 0
+		self._move = [0, 0]
+
 class SportyCar(Car):
 	max_speed = 10
 	reverse_speed = 1
@@ -280,6 +287,12 @@ while not done:
 		car.draw_light(screen)
 	for thing in things:
 		thing.draw(screen)
+
+	coll = list(cars)
+	for e in list(cars):
+		for c in pygame.sprite.spritecollide(e, coll, False, collcmp):
+			if c is not e:
+				c.bump(5)
 
 	clock.tick(60)
 	pygame.display.flip()
