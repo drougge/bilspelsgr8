@@ -78,6 +78,7 @@ class Sprite(pygame.sprite.Sprite):
 		if not map_mask.overlap(self._imgs[0][rot][1], rect):
 			self._rot = rot
 	def update(self):
+		self._newimg()
 		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
 		xz, yz = z
 		xo, yo = self._offset
@@ -86,17 +87,16 @@ class Sprite(pygame.sprite.Sprite):
 			new_pos = map(add, self._pos, self._move)
 			x, y = map(int, new_pos)
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
-				self._speed = 0
-				self.set_speed(0)
 				if self._stuck:
 					new_pos = self._pos
 				else:
 					new_pos = map(sub, self._pos, self._move) # don't get stuck
 					self._stuck = True
+				self._speed = 0
+				self.set_speed(0)
 			else:
 				self._stuck = False
 			self._pos = new_pos
-		self._newimg()
 		x, y = map(int, self._pos)
 		self.rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
 
