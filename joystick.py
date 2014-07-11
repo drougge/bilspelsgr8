@@ -4,7 +4,7 @@ from __future__ import print_function, division
 
 import pygame
 import pygame.joystick
-from operator import add, div
+from operator import add, sub, div
 from math import atan2, degrees, radians, sin, cos
 from functools import partial
 from workarounds import print
@@ -46,6 +46,8 @@ class Sprite(pygame.sprite.Sprite):
 		self._cur_img = 0
 		self._rot = 0
 		self._anim = 0
+		self.rect = pygame.rect.Rect(0, 0, 1, 1)
+		self._stuck = False
 		if move:
 			self._setrot()
 			self._newimg()
@@ -70,7 +72,17 @@ class Sprite(pygame.sprite.Sprite):
 		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
 		if self._move:
 			#self._pathify(z)
-			self._pos = map(add, self._pos, self._move)
+			new_pos = map(add, self._pos, self._move)
+			if map_mask.overlap(self.mask, self.rect[:2]):
+				self.speed = 0
+				if self._stuck:
+					new_pos = self._pos
+				else:
+					new_pos = map(sub, self._pos, self._move) # don't get stuck
+					self._stuck = True
+			else:
+				self._stuck = False
+			self._pos = new_pos
 		self._newimg()
 		x, y = map(int, self._pos)
 		xz, yz = z
@@ -158,7 +170,7 @@ class Player():
 	def __init__(self, settings, pos):
 		for key, value in settings.iteritems():
 			setattr(self, key, value)
-		self.car = Car(800, 600, self)
+		self.car = Car(840, 600, self)
 		cars.add(self.car)
 		render = verdana16.render(self.name, True, self.color)
 		positions = {
@@ -171,6 +183,9 @@ class Player():
 
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
+map_mask = pygame.image.load("map1.mask.png")
+map_mask.set_colorkey((255, 255, 255, ))
+map_mask = pygame.mask.from_surface(map_mask)
 pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
