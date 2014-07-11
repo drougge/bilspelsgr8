@@ -117,10 +117,10 @@ cars.add(Car(800, 600))
 done = False
 while not done:
 	screen.blit(background, (0, 0))
-	# EVENT PROCESSING STEP
-	for event in pygame.event.get(): # User did something
-		if event.type == pygame.QUIT: # If user clicked close
-				done = True # Flag that we are done so we exit this loop
+
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+				done = True
 		elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 				done = True
 
