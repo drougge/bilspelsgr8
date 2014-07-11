@@ -88,10 +88,30 @@ class Car(Sprite):
 
 	def __init__(self, x, y, player):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
+		self._colourize(player.color)
 		self.player=player
 		self.j=player.joystick # Joystick settings
 		self.J=joysticks[self.j['joystick_id']] # (pygame) Joystick object
 		self._light, = imgload(["light.png"])
+
+	def _colourize(self, color): # dat spelling
+		print(color)
+		imgs = []
+		colour = pygame.Surface([1000, 1000])
+		colour.fill(color)
+		for i in self._imgs:
+			d = {}
+			for k, (s, m) in i.iteritems():
+				s = s.copy()
+				s.blit(colour, (0, 0), None, pygame.BLEND_RGB_MIN)
+				d[k] = s, m
+			imgs.append(d)
+		self._imgs = imgs
+		if self._move:
+			self._newimg()
+		else:
+			self._img = self._imgs[0]
+			self.image, self.mask = self._img[0]
 
 	def update(self):
 		axis_value = self.J.get_axis(self.j['turn_axis'])
