@@ -76,7 +76,7 @@ class Sprite(pygame.sprite.Sprite):
 		self.rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
 
 class Car(Sprite):
-	_sprite_filenames = ("car_red.png",)
+	_sprite_filenames = ("car_white.png",)
 	max_speed = 20
 	_speed = 0
 	max_accel = 1
