@@ -254,10 +254,11 @@ class Player():
 			2: [150,1085,90],
 			3: [1340,1064,180]
 		}
+		self._lap = 1
 		self.car = car_type(car_positions[pos], self)
 		print(self.car)
 		cars.add(self.car)
-		s = "%s (%d %%)" % (self.name, 100)
+		s = "%s (%d %%), lap %d of 3" % (self.name, 100, self._lap)
 		render = verdana16.render(s, True, self.color)
 		text_positions = {
 			0: [10, 10],
@@ -268,7 +269,7 @@ class Player():
 		self._draw = partial(screen.blit, dest=text_positions[pos])
 	
 	def draw(self):
-		s = "%s (%d %%)" % (self.name, self.car._health)
+		s = "%s (%d %%), lap %d of 3" % (self.name, self.car._health, self._lap)
 		render = verdana16.render(s, True, self.color)
 		self._draw(render)
 
