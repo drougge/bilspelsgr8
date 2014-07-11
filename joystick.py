@@ -80,6 +80,7 @@ class Car(Sprite):
 	max_speed = 10
 	def __init__(self, x, y):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
+		self._light, = imgload(["light.png"])
 	def update(self):
 		axis_value = joysticks[0].get_axis(0)
 		#print(axis_value)
@@ -95,6 +96,16 @@ class Car(Sprite):
 
 		Sprite.update(self)
 
+	def draw_light(self, surface):
+		visible = self._light[self._rot][0].copy()
+		r = radians(self._rot)
+		off = [sin(r) * 240, cos(r) * 240]
+		center = visible.get_rect().center
+		blt_pos = (self._pos[0] + off[0] - center[0], self._pos[1] + off[1] - center[1], )
+		area = visible.get_rect(top=blt_pos[1], left=blt_pos[0])
+		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
+		surface.blit(visible, blt_pos)
+
 class Player():
 	def __init__(self, name):
 		self.name = name
@@ -105,7 +116,6 @@ class Player():
 
 screen.fill((255, 0, 228))
 background = pygame.image.load("map1.png").convert_alpha()
-screen.blit(background, (0, 0))
 pygame.display.flip()
 
 players = []
@@ -119,7 +129,7 @@ cars.add(Car(800, 600))
 
 done = False
 while not done:
-	screen.blit(background, (0, 0))
+	screen.fill((255, 0, 228))
 	drawcounter = 0
 	for p in players:
 		p.draw(drawcounter)
@@ -143,6 +153,9 @@ while not done:
 
 	for thing in things:
 		thing.update()
+	for car in cars:
+		car.draw_light(screen)
+	for thing in things:
 		thing.draw(screen)
 
 	clock.tick(60)
