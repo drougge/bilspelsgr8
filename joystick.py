@@ -79,10 +79,13 @@ class Sprite(pygame.sprite.Sprite):
 			self._rot = rot
 	def update(self):
 		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
+		xz, yz = z
+		xo, yo = self._offset
 		if self._move:
 			#self._pathify(z)
 			new_pos = map(add, self._pos, self._move)
-			if map_mask.overlap(self.mask, self.rect[:2]):
+			x, y = map(int, new_pos)
+			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
 				self._speed = 0
 				self.set_speed(0)
 				if self._stuck:
@@ -95,8 +98,6 @@ class Sprite(pygame.sprite.Sprite):
 			self._pos = new_pos
 		self._newimg()
 		x, y = map(int, self._pos)
-		xz, yz = z
-		xo, yo = self._offset
 		self.rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
 
 class Car(Sprite):
