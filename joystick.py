@@ -85,14 +85,17 @@ class Car(Sprite):
 	_turn = 0
 	friction = 0.3
 
-	def __init__(self, x, y):
+	def __init__(self, x, y, player):
 		Sprite.__init__(self, self._sprite_filenames, x, y)
+		self.player=player
+		self.j=player.joystick
+
 	def update(self):
-		axis_value = joysticks[0].get_axis(0)
+		axis_value = joysticks[self.j['joystick_id']].get_axis(self.j['turn_axis'])
 		self._turn = -int(axis_value*self.max_turn)
 		self._rot = (self._rot + self._turn) % 360
 
-		axis_value = (1+joysticks[0].get_axis(13))/2 - (1+joysticks[0].get_axis(12))/2
+		axis_value = (1+joysticks[self.j['joystick_id']].get_axis(self.j['accelerate_axis']))/2 - (1+joysticks[self.j['joystick_id']].get_axis(self.j['retard_axis']))/2
 		print("Axis value={:>6.3f}".format(axis_value))
 		self._accel = (axis_value * self.max_accel) - self.friction
 		self._speed += self._accel
@@ -108,8 +111,12 @@ class Car(Sprite):
 		Sprite.update(self)
 
 class Player():
-	def __init__(self, name):
-		self.name = name
+	def __init__(self, settings):
+		for key, value in settings.iteritems():
+			setattr(self, key, value)
+		self.car = Car(800,600,self)
+		cars.add(self.car)
+
 	def draw(self, offset):
 		font = pygame.font.SysFont("Verdana", 14, True)
 		render = font.render(self.name, True, (0,0,0))
@@ -120,14 +127,12 @@ background = pygame.image.load("map1.png").convert_alpha()
 screen.blit(background, (0, 0))
 pygame.display.flip()
 
+cars = pygame.sprite.RenderClear([])
 players = []
 for player in settings['players']:
-	players.append(Player(player['name']))
+	players.append(Player(player))
 
-
-cars = pygame.sprite.RenderClear([])
 things = [cars]
-cars.add(Car(800, 600))
 
 done = False
 while not done:
