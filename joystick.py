@@ -91,6 +91,7 @@ class Sprite(pygame.sprite.Sprite):
 			new_pos = map(add, self._pos, self._move)
 			x, y = map(int, new_pos)
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
+				effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
 				self._health -= abs(self._speed)
 				self._speed = 0
 				self.set_speed(0)
@@ -144,6 +145,7 @@ class Car(Sprite):
 			self.image, self.mask = self._img[0]
 
 	def death(self):
+		effects.add(Effect(self._pos, "R.I.P.", 120, self.player.color))
 		Sprite.kill(self)
 
 	def update(self):
@@ -202,6 +204,7 @@ class Car(Sprite):
 		surface.blit(visible, blt_pos)
 
 	def bump(self, force):
+		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
 		self._health -= force
 		self._pos = map(sub, self._pos, self._move)
 		self._speed = 0
@@ -222,6 +225,23 @@ class CheapCar(Car):
 	friction = 0.1
 
 car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) and Car in t.mro() and t is not Car}
+
+class Effect(pygame.sprite.Sprite):
+	def __init__(self, pos, text, lifetime, color):
+		pygame.sprite.Sprite.__init__(self)
+		self._pos = pos
+		self._lifetime = lifetime
+		render = verdana16.render(text, True, color, (0, 0, 0))
+		self.rect = render.get_rect(left=pos[0], top=pos[1])
+		self.image = render
+		self.image.set_alpha(255)
+		self.image.set_colorkey((0, 0, 0))
+	def update(self):
+		step = 255/self._lifetime
+		alpha = self.image.get_alpha() - step
+		if alpha <= 0:
+			self.kill()
+		self.image.set_alpha(alpha)
 
 class Player():
 	def __init__(self, settings, pos):
@@ -260,11 +280,12 @@ map_mask = pygame.mask.from_surface(map_mask)
 pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
+effects = pygame.sprite.RenderClear([])
 players = []
 for pos, player in enumerate(settings['players']):
 	players.append(Player(player, pos))
 
-things = [cars]
+things = [cars, effects]
 
 done = False
 while not done:
