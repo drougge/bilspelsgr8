@@ -74,7 +74,8 @@ class Sprite(pygame.sprite.Sprite):
 			#self._pathify(z)
 			new_pos = map(add, self._pos, self._move)
 			if map_mask.overlap(self.mask, self.rect[:2]):
-				self.speed = 0
+				self._speed = 0
+				self.set_speed(0)
 				if self._stuck:
 					new_pos = self._pos
 				else:
