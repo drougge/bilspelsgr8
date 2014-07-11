@@ -84,8 +84,11 @@ class Car(Sprite):
 	_turn = 0
 	_health = 100
 
-	def __init__(self, x, y, player):
+	def __init__(self, pos, player):
+		x = pos[0]
+		y = pos[1]
 		Sprite.__init__(self, self._sprite_filenames, x, y)
+		self._rot = pos[2]
 		self._colourize(player.color)
 		self.player=player
 		self.j=player.joystick # Joystick settings
@@ -181,18 +184,24 @@ class Player():
 		for key, value in settings.iteritems():
 			setattr(self, key, value)
 		car_type = car_types.get(self.car, CheapCar)
-		self.car = car_type(800, 600, self)
+		car_positions = {
+			0: [240,145,320],
+			1: [1460,255,220],
+			2: [150,1085,90],
+			3: [1340,1064,180]
+		}
+		self.car = car_type(car_positions[pos], self)
 		print(self.car)
 		cars.add(self.car)
 		s = "%s (%d %%)" % (self.name, 100)
 		render = verdana16.render(s, True, self.color)
-		positions = {
+		text_positions = {
 			0: [10, 10],
 			1: [screen.get_size()[0]-10-render.get_size()[0], 10],
 			2: [10, screen.get_size()[1]-10-render.get_size()[1]],
 			3: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]]
 		}
-		self._draw = partial(screen.blit, dest=positions[pos])
+		self._draw = partial(screen.blit, dest=text_positions[pos])
 	
 	def draw(self):
 		s = "%s (%d %%)" % (self.name, self.car._health)
