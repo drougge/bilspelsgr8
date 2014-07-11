@@ -90,6 +90,7 @@ class Sprite(pygame.sprite.Sprite):
 			new_pos = map(add, self._pos, self._move)
 			x, y = map(int, new_pos)
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
+				self._health -= abs(self._speed)
 				self._speed = 0
 				self.set_speed(0)
 				if self._stuck:
