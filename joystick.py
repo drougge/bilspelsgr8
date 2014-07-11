@@ -110,7 +110,13 @@ class Car(Sprite):
 			self._img = self._imgs[0]
 			self.image, self.mask = self._img[0]
 
+	def death(self):
+		Sprite.kill(self)
+
 	def update(self):
+		if self._health <= 0:
+			self.death()
+
 		axis_value = self.J.get_axis(self.j['turn_axis'])
 		self._turn = -int(axis_value*self.max_turn)
 		self._rot = (self._rot + self._turn) % 360
@@ -121,7 +127,7 @@ class Car(Sprite):
 			self._health -= .1
 		axis_value = accel_value - retard_value
 		print("Axis value={:>6.3f}".format(axis_value))
-		self._accel = (axis_value * self.max_accel) - self.friction
+		self._accel = (axis_value * (max(self.friction*1.5, self.max_accel * self._health/100))) - self.friction
 
 		if((self.J.get_button(self.j['reverse_button']))):
 			if(self._speed <= 0):
@@ -157,7 +163,7 @@ class Car(Sprite):
 class SportyCar(Car):
 	max_speed = 10
 	reverse_speed = 1
-	max_accel = .2
+	max_accel = .3
 	max_turn = 5
 	friction = 0.1
 
