@@ -115,7 +115,7 @@ class Car(Sprite):
 	_health = 100
 	_beeping = False
 
-	def __init__(self, pos, player):
+	def __init__(self, pos, first_goal, player):
 		x = pos[0]
 		y = pos[1]
 		Sprite.__init__(self, self._sprite_filenames, x, y)
@@ -125,6 +125,7 @@ class Car(Sprite):
 		self.j=player.joystick # Joystick settings
 		self.J=joysticks[self.j['joystick_id']] # (pygame) Joystick object
 		self._light, = imgload(["light.png"])
+		self._first_goal = self._next_goal = (first_goal + 1) % 4
 
 	def _colourize(self, color): # dat spelling
 		imgs = []
@@ -193,6 +194,11 @@ class Car(Sprite):
 
 		Sprite.update(self)
 
+		if map_goals[self._next_goal].overlap(self.mask, self.rect[:2]):
+			self._next_goal = (self._next_goal + 1) % 4
+			if self._next_goal == self._first_goal:
+				pass # do something amazing here
+
 	def draw_light(self, surface):
 		visible = self._light[self._rot][0].copy()
 		r = radians(self._rot)
@@ -250,20 +256,20 @@ class Player():
 		car_type = car_types.get(self.car, CheapCar)
 		car_positions = {
 			0: [240,145,320],
-			1: [1460,255,220],
-			2: [150,1085,90],
-			3: [1340,1064,180]
+			1: [150,1085,90],
+			2: [1340,1064,180],
+			3: [1460,255,220],
 		}
-		self.car = car_type(car_positions[pos], self)
-		print(self.car)
+		self.car = car_type(car_positions[pos], pos, self)
+#		print(self.car)
 		cars.add(self.car)
 		s = "%s (%d %%)" % (self.name, 100)
 		render = verdana16.render(s, True, self.color)
 		text_positions = {
 			0: [10, 10],
-			1: [screen.get_size()[0]-10-render.get_size()[0], 10],
-			2: [10, screen.get_size()[1]-10-render.get_size()[1]],
-			3: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]]
+			1: [10, screen.get_size()[1]-10-render.get_size()[1]],
+			2: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]],
+			3: [screen.get_size()[0]-10-render.get_size()[0], 10],
 		}
 		self._draw = partial(screen.blit, dest=text_positions[pos])
 	
@@ -272,11 +278,24 @@ class Player():
 		render = verdana16.render(s, True, self.color)
 		self._draw(render)
 
+def load_goals(name):
+	goals = []
+	with open(name, "r") as fh:
+		for line in fh:
+			plist = [map(int, p.split()) for p in line.split(",")]
+			g = pygame.Surface(map_mask.get_size())
+			g.set_colorkey((0, 0, 0))
+			pygame.draw.polygon(g, (255, 255, 255), plist)
+			goals.append(pygame.mask.from_surface(g))
+	assert len(goals) == 4
+	return goals
+
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
 map_mask = pygame.image.load("map1.mask.png")
 map_mask.set_colorkey((255, 255, 255, ))
 map_mask = pygame.mask.from_surface(map_mask)
+map_goals = load_goals("map1.goals")
 pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
