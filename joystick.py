@@ -20,6 +20,10 @@ screen = pygame.display.set_mode([1600, 1200])
 pygame.display.set_caption(settings['game']['name'])
 verdana16 = pygame.font.SysFont("Verdana", 16, True)
 
+if not pygame.mixer: print('Warning, sound disabled')
+pygame.mixer.init(44100, -16, 2, 2048)
+_snd_beep = pygame.mixer.Sound("beep.wav")
+
 global things
 _images = {}
 
@@ -83,6 +87,7 @@ class Car(Sprite):
 	_accel = 0
 	_turn = 0
 	_health = 100
+	_beeping = False
 
 	def __init__(self, pos, player):
 		x = pos[0]
@@ -135,9 +140,16 @@ class Car(Sprite):
 		if((self.J.get_button(self.j['reverse_button']))):
 			if(self._speed <= 0):
 				self._speed = -self.reverse_speed
+				if not self._beeping:
+					self._beeping = True
+					_snd_beep.play(-1)
 				self._accel = 0
 			else:
 				pass # Stop before you reverse!
+		else:
+			if self._beeping:
+				self._beeping = False
+				_snd_beep.stop()
 
 		self._speed += self._accel
 		if(self._speed > self.max_speed):
