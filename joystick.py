@@ -74,15 +74,16 @@ class Sprite(pygame.sprite.Sprite):
 		self._img = self._imgs[self._cur_img]
 		self.image, self.mask = self._img[self._rot]
 	def try_set_rotate(self, rot):
-		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
+		image, mask = self._imgs[0][rot]
+		z = map(div, map(add, image.get_size(), self._offset), (2, 2))
 		x, y = map(int, self._pos)
 		xz, yz = z
 		xo, yo = self._offset
 		rect = (x - xz + xo, y - yz + yo)
-		print(self._imgs[0][int(rot)][1], rect)
-		if not map_mask.overlap(self._imgs[0][rot][1], rect):
+		if not map_mask.overlap(mask, rect):
 			self._rot = rot
 	def update(self):
+		self._newimg()
 		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
 		xz, yz = z
 		xo, yo = self._offset
@@ -93,17 +94,16 @@ class Sprite(pygame.sprite.Sprite):
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
 				effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
 				self._health -= abs(self._speed)
-				self._speed = 0
-				self.set_speed(0)
 				if self._stuck:
 					new_pos = self._pos
 				else:
 					new_pos = map(sub, self._pos, self._move) # don't get stuck
 					self._stuck = True
+				self._speed = 0
+				self.set_speed(0)
 			else:
 				self._stuck = False
 			self._pos = new_pos
-		self._newimg()
 		x, y = map(int, self._pos)
 		self.rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
 
