@@ -17,9 +17,10 @@ null_fd = os.open("/dev/null", os.O_WRONLY)
 os.dup2(null_fd, 1)
 
 pygame.init()
-clock = pygame.time.Clock()
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+pygame.font.init()
+clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode([1600, 1200])
 pygame.display.set_caption(settings['game']['name'])
@@ -101,13 +102,22 @@ class Car(Sprite):
 
 		Sprite.update(self)
 
-
+class Player():
+	def __init__(self, name):
+		self.name = name
+	def draw(self, offset):
+		font = pygame.font.SysFont("Verdana", 14, True)
+		render = font.render(self.name, True, (0,0,0))
+		screen.blit(render, (10,10+(20*offset)))
 
 screen.fill((255, 0, 228))
 background = pygame.image.load("map1.png").convert_alpha()
 screen.blit(background, (0, 0))
 pygame.display.flip()
 
+players = []
+for player in settings['players']:
+	players.append(Player(player['name']))
 
 
 cars = pygame.sprite.RenderClear([])
@@ -117,6 +127,10 @@ cars.add(Car(800, 600))
 done = False
 while not done:
 	screen.blit(background, (0, 0))
+	drawcounter = 0
+	for p in players:
+		p.draw(drawcounter)
+		drawcounter += 1
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:

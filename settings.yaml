@@ -1,8 +1,9 @@
 game:
   name: "Bilspelsgråtta!!1"
-player:
-  name: fubar
-  joystick: 
-    joystick_id: 0
-    turn_axis: 0
-    accelerate_axis: 13
+players:
+  - name: fubar
+    joystick:
+      joystick_id: 0
+      turn_axis: 0
+      accelerate_axis: 13
+  - name: barfoo
