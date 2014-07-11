@@ -8,6 +8,8 @@ from operator import add, div
 from math import atan2, degrees, radians, sin, cos
 import os
 
+from settings import settings
+
 # Pygame prints lots of internal debug, so redirect stdout to /dev/null
 stdout_fd = os.dup(1)
 stdout = os.fdopen(stdout_fd, "w")
@@ -20,7 +22,7 @@ pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
 
 screen = pygame.display.set_mode([1600, 1200])
-pygame.display.set_caption("TROLOLO joysticks!!!1")
+pygame.display.set_caption(settings['game']['name'])
 
 global things
 _images = {}
