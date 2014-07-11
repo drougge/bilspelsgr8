@@ -214,14 +214,14 @@ class SportyCar(Car):
 	max_speed = 10
 	reverse_speed = 1
 	max_accel = .3
-	max_turn = 5
+	max_turn = 4
 	friction = 0.1
 
 class CheapCar(Car):
 	max_speed = 4
 	reverse_speed = 1
 	max_accel = .15
-	max_turn = 7
+	max_turn = 4
 	friction = 0.1
 
 car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) and Car in t.mro() and t is not Car}
