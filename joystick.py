@@ -146,6 +146,7 @@ class Car(Sprite):
 
 	def death(self):
 		effects.add(Effect(self._pos, "R.I.P.", 120, self.player.color))
+		self.player.respawn_soon()
 		Sprite.kill(self)
 
 	def update(self):
@@ -244,6 +245,8 @@ class Effect(pygame.sprite.Sprite):
 		self.image.set_alpha(alpha)
 
 class Player():
+	_respawn_delay = -1
+
 	def __init__(self, settings, pos):
 		for key, value in settings.iteritems():
 			setattr(self, key, value)
@@ -255,7 +258,8 @@ class Player():
 			3: [1340,1064,180]
 		}
 		self._lap = 1
-		self.car = car_type(car_positions[pos], self)
+		self._mk_car = partial(car_type, car_positions[pos], self)
+		self.car = self._mk_car()
 		print(self.car)
 		cars.add(self.car)
 		s = "%s (%d %%), lap %d of 3" % (self.name, 100, self._lap)
@@ -272,6 +276,18 @@ class Player():
 		s = "%s (%d %%), lap %d of 3" % (self.name, self.car._health, self._lap)
 		render = verdana16.render(s, True, self.color)
 		self._draw(render)
+
+	def update(self):
+		if self._respawn_delay > 0:
+			self._respawn_delay -= 1
+		if self._respawn_delay == 0:
+			self._respawn_delay = -1
+			self._lap = 1
+			self.car = self._mk_car()
+			cars.add(self.car)
+
+	def respawn_soon(self):
+		self._respawn_delay = 300
 
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
@@ -292,6 +308,7 @@ done = False
 while not done:
 	screen.fill((0, 0, 0))
 	for p in players:
+		p.update()
 		p.draw()
 
 	for event in pygame.event.get():
