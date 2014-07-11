@@ -6,6 +6,7 @@ import pygame
 import pygame.joystick
 from operator import add, div
 from math import atan2, degrees, radians, sin, cos
+from functools import partial
 from workarounds import print
 from settings import settings
 
@@ -17,6 +18,7 @@ clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode([1600, 1200])
 pygame.display.set_caption(settings['game']['name'])
+verdana16 = pygame.font.SysFont("Verdana", 16, True)
 
 global things
 _images = {}
@@ -95,7 +97,6 @@ class Car(Sprite):
 		self._light, = imgload(["light.png"])
 
 	def _colourize(self, color): # dat spelling
-		print(color)
 		imgs = []
 		colour = pygame.Surface([1000, 1000])
 		colour.fill(color)
@@ -154,22 +155,19 @@ class Car(Sprite):
 		surface.blit(visible, blt_pos)
 
 class Player():
-	def __init__(self, settings):
+	def __init__(self, settings, pos):
 		for key, value in settings.iteritems():
 			setattr(self, key, value)
-		self.car = Car(800,600,self)
+		self.car = Car(800, 600, self)
 		cars.add(self.car)
-
-	def draw(self, pos):
-		font = pygame.font.SysFont("Verdana", 16, True)
-		render = font.render(self.name, True, self.color)
+		render = verdana16.render(self.name, True, self.color)
 		positions = {
 			0: [10, 10],
 			1: [screen.get_size()[0]-10-render.get_size()[0], 10],
 			2: [10, screen.get_size()[1]-10-render.get_size()[1]],
 			3: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]]
 		}
-		screen.blit(render, positions[pos])
+		self.draw = partial(screen.blit, render, positions[pos])
 
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
@@ -177,18 +175,16 @@ pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
 players = []
-for player in settings['players']:
-	players.append(Player(player))
+for pos, player in enumerate(settings['players']):
+	players.append(Player(player, pos))
 
 things = [cars]
 
 done = False
 while not done:
 	screen.fill((0, 0, 0))
-	drawcounter = 0
 	for p in players:
-		p.draw(drawcounter)
-		drawcounter += 1
+		p.draw()
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
