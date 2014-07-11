@@ -24,6 +24,10 @@ verdana16 = pygame.font.SysFont("Verdana", 16, True)
 if not pygame.mixer: print('Warning, sound disabled')
 pygame.mixer.init(44100, -16, 2, 2048)
 _snd_beep = pygame.mixer.Sound("beep.wav")
+_snd_bump = pygame.mixer.Sound("bump.wav")
+_snd_hispeed = pygame.mixer.Sound("hispeed.wav")
+_snd_midspeed = pygame.mixer.Sound("midspeed.wav")
+_snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
 
 global things
 _images = {}
@@ -93,6 +97,7 @@ class Sprite(pygame.sprite.Sprite):
 			x, y = map(int, new_pos)
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
 				effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
+				_snd_bump.play()
 				self._health -= abs(self._speed)
 				if self._stuck:
 					new_pos = self._pos
@@ -114,6 +119,7 @@ class Car(Sprite):
 	_turn = 0
 	_health = 100
 	_beeping = False
+	_sound = None
 
 	def __init__(self, pos, first_goal, player):
 		x = pos[0]
@@ -164,7 +170,6 @@ class Car(Sprite):
 		if accel_value > 0.5 and retard_value > 0.5:
 			self._health -= .1
 		axis_value = accel_value - retard_value
-		print("Axis value={:>6.3f}".format(axis_value))
 		self._accel = (axis_value * (max(self.friction*1.5, self.max_accel * self._health/100))) - self.friction
 
 		if((self.J.get_button(self.j['reverse_button']))):
@@ -190,8 +195,23 @@ class Car(Sprite):
 
 		self.set_speed(self._speed)
 
-		print("Accel={:>6.3f}".format(self._accel))
-		print("Speed={:>6.3f}".format(self._speed))
+		# Engine sounds!!1
+		snd = None
+		if self._speed > self.max_speed * 0.8:
+			snd = _snd_hispeed
+		elif self._speed > self.max_speed * 0.4:
+			snd = _snd_midspeed
+		elif self._speed > self.max_speed * 0.03:
+			snd = _snd_lowspeed
+		if snd:
+			if self._sound is not snd:
+				if self._sound:
+					self._sound.stop()
+				snd.play(-1)
+				self._sound = snd
+		elif self._sound:
+			self._sound.stop()
+			self._sound = None
 
 		Sprite.update(self)
 
@@ -212,6 +232,7 @@ class Car(Sprite):
 
 	def bump(self, force):
 		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
+		_snd_bump.play()
 		self._health -= force
 		self._pos = map(sub, self._pos, self._move)
 		self._speed = 0
