@@ -198,7 +198,7 @@ class Car(Sprite):
 		if map_goals[self._next_goal].overlap(self.mask, self.rect[:2]):
 			self._next_goal = (self._next_goal + 1) % 4
 			if self._next_goal == self._first_goal:
-				pass # do something amazing here
+				self.player._lap += 1
 
 	def draw_light(self, surface):
 		visible = self._light[self._rot][0].copy()
