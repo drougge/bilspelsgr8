@@ -129,11 +129,17 @@ class Player():
 		cars.add(self.car)
 
 	def draw(self, offset):
-		font = pygame.font.SysFont("Verdana", 14, True)
-		render = font.render(self.name, True, (0,0,0))
-		screen.blit(render, (10,10+(20*offset)))
+		font = pygame.font.SysFont("Verdana", 16, True)
+		render = font.render(self.name, True, self.color)
+		positions = {
+			0: [10, 10],
+			1: [screen.get_size()[0]-10-render.get_size()[0], 10],
+			2: [10, screen.get_size()[1]-10-render.get_size()[1]],
+			3: [screen.get_size()[0]-10-render.get_size()[0], screen.get_size()[1]-10-render.get_size()[1]]
+		}
+		screen.blit(render, positions[offset])
 
-screen.fill((255, 0, 228))
+screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
 pygame.display.flip()
 
@@ -146,7 +152,7 @@ things = [cars]
 
 done = False
 while not done:
-	screen.fill((255, 0, 228))
+	screen.fill((0, 0, 0))
 	drawcounter = 0
 	for p in players:
 		p.draw(drawcounter)

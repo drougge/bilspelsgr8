@@ -2,12 +2,14 @@ game:
   name: "Bilspelsgråtta!!1"
 players:
   - name: fubar
+    color: [0,255,0]
     joystick:
       joystick_id: 0
       turn_axis: 0
       accelerate_axis: 13
       retard_axis: 12
   - name: derpaherp
+    color: [0,0,255]
     joystick:
       joystick_id: 1
       turn_axis: 0
