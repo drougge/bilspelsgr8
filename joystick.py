@@ -166,13 +166,6 @@ while not done:
 
 	for j in joysticks:
 		j.init()
-		#print(j.get_name())
-		for i in range(j.get_numaxes()):
-			axis = j.get_axis(i)
-			#print("Axis {} value: {:>6.3f}".format(i, axis))
-		for i in range(j.get_numbuttons()):
-			button = j.get_button(i)
-			#print("Button {:>2} value: {}".format(i, button))
 
 	for thing in things:
 		thing.update()
