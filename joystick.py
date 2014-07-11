@@ -244,6 +244,27 @@ class Effect(pygame.sprite.Sprite):
 			self.kill()
 		self.image.set_alpha(alpha)
 
+class Stopwatch(pygame.sprite.Sprite):
+	_time = 0
+	color = (255, 255, 255)
+	def __init__(self):
+		pygame.sprite.Sprite.__init__(self)
+		s = "00:00.00"
+		render = verdana16.render(s, True, self.color)
+		self._pos = (int(screen.get_size()[0]/2 - render.get_size()[0]/2), 10)
+		self.rect = render.get_rect(left=self._pos[0], top=self._pos[1])
+		self.image = render
+		self._draw = partial(screen.blit, dest=self._pos)
+	def update(self):
+		self._time += 1
+	def draw(self):
+		ticks = self._time % 60
+		seconds = (self._time % (60*60)) // 60
+		minutes = self._time // (60*60)
+		s = "%2d:%2d.%2d" % (minutes, seconds, ticks)
+		render = verdana16.render(s, True, self.color)
+		self._draw(render)
+
 class Player():
 	_respawn_delay = -1
 
@@ -304,9 +325,15 @@ for pos, player in enumerate(settings['players']):
 
 things = [cars, effects]
 
+sw = Stopwatch()
+
 done = False
 while not done:
 	screen.fill((0, 0, 0))
+
+	sw.update()
+	sw.draw()
+
 	for p in players:
 		p.update()
 		p.draw()
