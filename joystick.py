@@ -446,7 +446,6 @@ class Player():
 			self._respawn_delay -= 1
 		if self._respawn_delay == 0:
 			self._respawn_delay = -1
-			self._lap = 1
 			self.car = self._mk_car()
 			cars.add(self.car)
 
