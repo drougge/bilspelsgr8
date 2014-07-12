@@ -71,9 +71,6 @@ pygame.mixer.init(44100, -16, 2, 2048)
 _snd_bump = pygame.mixer.Sound("bump.wav")
 _snd_shot = pygame.mixer.Sound("shot.wav")
 _snd_death = pygame.mixer.Sound("trollandi_death.wav")
-_snd_hispeed = pygame.mixer.Sound("hispeed.wav")
-_snd_midspeed = pygame.mixer.Sound("midspeed.wav")
-_snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
 _snd_prestart = pygame.mixer.Sound("prestart.ogg")
 _snd_start = pygame.mixer.Sound("start.ogg")
 _snd_blurgh = pygame.mixer.Sound("blurgh.wav")
@@ -221,6 +218,9 @@ class Car(Sprite):
 		self._backlight, = imgload(["backlight.png"], rect_instead_of_mask=True)
 		self._first_goal = self._next_goal = (first_goal + 1) % 4
 		self._snd_beep = pygame.mixer.Sound("beep.wav")
+		self._snd_hispeed = pygame.mixer.Sound("hispeed.wav")
+		self._snd_midspeed = pygame.mixer.Sound("midspeed.wav")
+		self._snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
 
 	def _colourize(self, color): # dat spelling
 		imgs = []
@@ -305,11 +305,11 @@ class Car(Sprite):
 		# Engine sounds!!1
 		snd = None
 		if self._speed > self.max_speed * 0.8:
-			snd = _snd_hispeed
+			snd = self._snd_hispeed
 		elif self._speed > self.max_speed * 0.4:
-			snd = _snd_midspeed
+			snd = self._snd_midspeed
 		elif self._speed > self.max_speed * 0.03:
-			snd = _snd_lowspeed
+			snd = self._snd_lowspeed
 		if snd:
 			if self._sound is not snd:
 				if self._sound:
