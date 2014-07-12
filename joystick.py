@@ -243,7 +243,6 @@ class Car(Sprite):
 	def fire(self):
 		self._fired_last_tick = True
 		bullets.add(Bullet(self._pos, self._rot, self._speed))
-		print("Fire!!")
 
 	def update(self):
 		if self._health <= 0:
@@ -470,7 +469,6 @@ def load_towers(name, size):
 		with open(name, "r") as fh:
 			for line in fh:
 				pos = map(int, line.split())
-				print(pos)
 				towers.append(Ext(pos))
 	except IOError:
 		pass
