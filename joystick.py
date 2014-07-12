@@ -410,7 +410,9 @@ class Ext(Tower):
 		self._animate = 10
 
 	def fire(self):
+		bullets.add(Bullet(self._pos, 0, 5))
 		bullets.add(Bullet(self._pos, 90, 5))
+		bullets.add(Bullet(self._pos, 180, 5))
 		bullets.add(Bullet(self._pos, 270, 5))
 
 class Player():
