@@ -362,7 +362,8 @@ class Effect(pygame.sprite.Sprite):
 		self._pos = pos = scaled(pos)
 		self._lifetime = lifetime
 		render = font.render(text, True, color, (0, 0, 0))
-		self.rect = render.get_rect(left=pos[0], top=pos[1])
+		rect = render.get_rect()
+		self.rect = render.get_rect(left=pos[0] - rect.width // 2, top=pos[1] - rect.height // 2)
 		self.image = render
 		self.image.set_alpha(255)
 		self.image.set_colorkey((0, 0, 0))
