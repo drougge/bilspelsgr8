@@ -95,8 +95,9 @@ def load_map(num):
 	map_mask.set_colorkey((255, 255, 255, ))
 	map_mask = pygame.mask.from_surface(map_mask)
 	map_goals = load_goals(m + ".goals", map_mask.get_size())
+	map_towers = load_towers(m + ".towers", map_mask.get_size())
 	car_positions = load_cars(m + ".cars")
-	return background, map_mask, map_goals, car_positions
+	return background, map_mask, map_goals, map_towers, car_positions
 
 class Sprite(pygame.sprite.Sprite):
 	_animate = False
@@ -386,6 +387,32 @@ class Stopwatch(pygame.sprite.Sprite):
 		render = verdana16.render(s, True, self.color)
 		self._draw(render)
 
+class Tower(Sprite):
+	_timer = 0
+	def __init__(self, pos):
+		x = pos[0]
+		y = pos[1]
+		Sprite.__init__(self, self._sprite_filenames, x, y)
+
+	def update(self):
+		Sprite.update(self)
+		self._timer += 1
+		if self._timer >= self.interval:
+			self._timer = 0
+			self.fire()
+
+class Ext(Tower):
+	_sprite_filenames = ("exttower_1.png", "exttower_2.png", "exttower_3.png", "exttower_4.png")
+	interval = 40
+
+	def __init__(self, pos):
+		Tower.__init__(self, pos)
+		self._animate = 10
+
+	def fire(self):
+		bullets.add(Bullet(self._pos, 90, 5))
+		bullets.add(Bullet(self._pos, 270, 5))
+
 class Player():
 	_respawn_delay = -1
 
@@ -436,6 +463,18 @@ def load_goals(name, size):
 	assert len(goals) == 4
 	return goals
 
+def load_towers(name, size):
+	towers = []
+	try:
+		with open(name, "r") as fh:
+			for line in fh:
+				pos = map(int, line.split())
+				print(pos)
+				towers.append(Ext(pos))
+	except IOError:
+		pass
+	return towers
+
 def load_cars(name):
 	cars = []
 	with open(name, "r") as fh:
@@ -448,16 +487,21 @@ def load_cars(name):
 
 screen.fill((0, 0, 0))
 pygame.display.flip()
-background, map_mask, map_goals, car_positions = load_map(args.map)
+background, map_mask, map_goals, map_towers, car_positions = load_map(args.map)
 
 cars = pygame.sprite.RenderClear([])
 effects = pygame.sprite.RenderClear([])
 bullets = pygame.sprite.RenderClear([])
+towers = pygame.sprite.RenderClear([])
+
+for t in map_towers:
+	towers.add(t)
+
 players = []
 for pos, player in enumerate(settings['players']):
 	players.append(Player(player, pos))
 
-things = [cars, effects, bullets]
+things = [cars, effects, bullets, towers]
 
 sw = Stopwatch()
 
