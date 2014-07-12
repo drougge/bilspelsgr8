@@ -299,12 +299,6 @@ class Player():
 		for key, value in settings.iteritems():
 			setattr(self, key, value)
 		car_type = car_types.get(self.car, CheapCar)
-		car_positions = {
-			0: [240,145,320],
-			1: [150,1085,90],
-			2: [1340,1064,180],
-			3: [1460,255,220],
-		}
 		self._lap = 1
 		self._mk_car = partial(car_type, car_positions[pos], pos, self)
 		self.car = self._mk_car()
@@ -348,12 +342,23 @@ def load_goals(name):
 	assert len(goals) == 4
 	return goals
 
+def load_cars(name):
+	cars = []
+	with open(name, "r") as fh:
+		for line in fh:
+			p = map(int, line.split())
+			assert len(p) == 3
+			cars.append(p)
+	assert len(cars) == 4
+	return cars
+
 screen.fill((0, 0, 0))
 background = pygame.image.load("map1.png").convert_alpha()
 map_mask = pygame.image.load("map1.mask.png")
 map_mask.set_colorkey((255, 255, 255, ))
 map_mask = pygame.mask.from_surface(map_mask)
 map_goals = load_goals("map1.goals")
+car_positions = load_cars("map1.cars")
 pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
