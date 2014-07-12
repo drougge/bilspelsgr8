@@ -2,6 +2,7 @@
 
 from __future__ import print_function, division
 
+from sys import argv
 import pygame
 import pygame.joystick
 from operator import add, sub, div
@@ -17,9 +18,34 @@ pygame.font.init()
 clock = pygame.time.Clock()
 collcmp = pygame.sprite.collide_mask
 
-screen = pygame.display.set_mode([1600, 1200])
+if len(argv) > 1:
+	assert len(argv) == 2, "Specify window X size as argument."
+	screen_x_size = int(argv[1])
+else:
+	screen_x_size = 1600
+
+# Some sort of sanity check
+assert screen_x_size in (640, 800, 960, 1024, 1152, 1280, 1366, 1400, 1440, 1600, 1920, 2048, 2560, 2880, 3200, 3840, 4096, 5120, 6400, 7680, 15360)
+
+if screen_x_size == 1600:
+	def scaled(s):
+		return s
+else:
+	def adjust_size(size):
+		return size * screen_x_size // 1600
+	def scaled(s):
+		if isinstance(s, pygame.rect.Rect):
+			return pygame.rect.Rect(*map(adjust_size, (s.left, s.top, s.width, s.height)), center=map(adjust_size, s.center))
+		elif isinstance(s, (tuple, list)):
+			return map(adjust_size, s)
+		elif isinstance(s, int):
+			return adjust_size(s)
+		else:
+			return pygame.transform.smoothscale(s, map(adjust_size, s.get_size()))
+
+screen = pygame.display.set_mode(scaled([1600, 1200]))
 pygame.display.set_caption(settings['game']['name'])
-verdana16 = pygame.font.SysFont("Verdana", 16, True)
+verdana16 = pygame.font.SysFont("Verdana", scaled(16), True)
 
 if not pygame.mixer: print('Warning, sound disabled')
 pygame.mixer.init(44100, -16, 2, 2048)
@@ -32,13 +58,16 @@ _snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
 global things
 _images = {}
 
-def imgload(names, step=1):
+def imgload(names, step=1, rect_instead_of_mask=False):
 	for name in names:
 		if name not in _images:
 			img = pygame.image.load(name).convert_alpha()
 			def rot(deg):
 				i = pygame.transform.rotozoom(img, deg, 1)
-				return i, pygame.mask.from_surface(i)
+				if rect_instead_of_mask:
+					return scaled(i), i.get_rect()
+				else:
+					return scaled(i), pygame.mask.from_surface(i)
 			_images[name] = {deg: rot(deg) for deg in range(0, 360, step or 360)}
 	return [_images[name] for name in names]
 
@@ -79,7 +108,7 @@ class Sprite(pygame.sprite.Sprite):
 		self.image, self.mask = self._img[self._rot]
 	def try_set_rotate(self, rot):
 		image, mask = self._imgs[0][rot]
-		z = map(div, map(add, image.get_size(), self._offset), (2, 2))
+		z = map(div, map(add, mask.get_size(), self._offset), (2, 2))
 		x, y = map(int, self._pos)
 		xz, yz = z
 		xo, yo = self._offset
@@ -88,7 +117,7 @@ class Sprite(pygame.sprite.Sprite):
 			self._rot = rot
 	def update(self):
 		self._newimg()
-		z = map(div, map(add, self.image.get_size(), self._offset), (2, 2))
+		z = map(div, map(add, self.mask.get_size(), self._offset), (2, 2))
 		xz, yz = z
 		xo, yo = self._offset
 		if self._move:
@@ -110,7 +139,7 @@ class Sprite(pygame.sprite.Sprite):
 				self._stuck = False
 			self._pos = new_pos
 		x, y = map(int, self._pos)
-		self.rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
+		self.rect = scaled(pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2))
 
 class Car(Sprite):
 	_sprite_filenames = ("car_white.png",)
@@ -130,7 +159,7 @@ class Car(Sprite):
 		self.player=player
 		self.j=player.joystick # Joystick settings
 		self.J=joysticks[self.j['joystick_id']] # (pygame) Joystick object
-		self._light, = imgload(["light.png"])
+		self._light, = imgload(["light.png"], rect_instead_of_mask=True)
 		self._first_goal = self._next_goal = (first_goal + 1) % 4
 
 	def _colourize(self, color): # dat spelling
@@ -215,20 +244,23 @@ class Car(Sprite):
 
 		Sprite.update(self)
 
-		if map_goals[self._next_goal].overlap(self.mask, self.rect[:2]):
+		if map_goals[self._next_goal].overlap(self.mask, map(int, self._pos)):
 			self._next_goal = (self._next_goal + 1) % 4
 			if self._next_goal == self._first_goal:
 				self.player._lap += 1
 
 	def draw_light(self, surface):
-		visible = self._light[self._rot][0].copy()
+		visible, rect = self._light[self._rot]
 		r = radians(self._rot)
 		off = [sin(r) * 240, cos(r) * 240]
-		center = visible.get_rect().center
+		center = rect.center
 		blt_pos = (self._pos[0] + off[0] - center[0], self._pos[1] + off[1] - center[1], )
-		area = visible.get_rect(top=blt_pos[1], left=blt_pos[0])
+		area = rect.copy()
+		area.left, area.top = blt_pos
+		area = scaled(area)
+		visible = visible.copy()
 		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
-		surface.blit(visible, blt_pos)
+		surface.blit(visible, scaled(blt_pos))
 
 	def bump(self, force):
 		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
@@ -257,7 +289,7 @@ car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) an
 class Effect(pygame.sprite.Sprite):
 	def __init__(self, pos, text, lifetime, color):
 		pygame.sprite.Sprite.__init__(self)
-		self._pos = pos
+		self._pos = pos = scaled(pos)
 		self._lifetime = lifetime
 		render = verdana16.render(text, True, color, (0, 0, 0))
 		self.rect = render.get_rect(left=pos[0], top=pos[1])
@@ -353,7 +385,7 @@ def load_cars(name):
 	return cars
 
 screen.fill((0, 0, 0))
-background = pygame.image.load("map1.png").convert_alpha()
+background = scaled(pygame.image.load("map1.png").convert_alpha())
 map_mask = pygame.image.load("map1.mask.png")
 map_mask.set_colorkey((255, 255, 255, ))
 map_mask = pygame.mask.from_surface(map_mask)
