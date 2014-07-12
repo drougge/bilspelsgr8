@@ -331,8 +331,10 @@ class Car(Sprite):
 		surface.blit(visible, scaled(blt_pos))
 
 	def draw_light(self, surface):
-		self._draw_light(surface, self._light, 240)
-		self._draw_light(surface, self._backlight, -44)
+		if self._beeping:
+			self._draw_light(surface, self._backlight, -44)
+		else:
+			self._draw_light(surface, self._light, 240)
 
 	def bump(self, force, sound):
 		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
