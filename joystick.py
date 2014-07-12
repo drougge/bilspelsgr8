@@ -250,6 +250,11 @@ class Car(Sprite):
 		self._fired_last_tick = True
 		bullets.add(Bullet(self._pos, self._rot, self._speed))
 
+	def kill(self):
+		Sprite.kill(self)
+		if self._beeping:
+			_snd_beep.stop()
+
 	def update(self):
 		if self._health <= 0:
 			self.death()
