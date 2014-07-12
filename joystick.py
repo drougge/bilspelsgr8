@@ -104,9 +104,9 @@ class Sprite(pygame.sprite.Sprite):
 	_offset = (0, 0)
 	_speed = 0
 
-	def __init__(self, imgs, x, y, move=False):
+	def __init__(self, x, y, move=False):
 		pygame.sprite.Sprite.__init__(self)
-		self._imgs = imgload(imgs)
+		self._imgs = imgload(self._sprite_filenames)
 		self._pos = (x, y)
 		self._dir = dir
 		self._move = move
@@ -180,7 +180,7 @@ class Bullet(Sprite):
 	def __init__(self, pos, rot, speed):
 		x = pos[0]
 		y = pos[1]
-		Sprite.__init__(self, self._sprite_filenames, x, y)
+		Sprite.__init__(self, x, y)
 		self._rot = rot
 		self.set_speed(35 + speed)
 		self.update()
@@ -205,7 +205,7 @@ class Car(Sprite):
 	def __init__(self, pos, first_goal, player):
 		x = pos[0]
 		y = pos[1]
-		Sprite.__init__(self, self._sprite_filenames, x, y)
+		Sprite.__init__(self, x, y)
 		self._rot = pos[2]
 		self._colourize(player.color)
 		self.player=player
@@ -392,7 +392,7 @@ class Tower(Sprite):
 	def __init__(self, pos):
 		x = pos[0]
 		y = pos[1]
-		Sprite.__init__(self, self._sprite_filenames, x, y)
+		Sprite.__init__(self, x, y)
 
 	def update(self):
 		Sprite.update(self)
@@ -404,10 +404,7 @@ class Tower(Sprite):
 class Ext(Tower):
 	_sprite_filenames = ("exttower_1.png", "exttower_2.png", "exttower_3.png", "exttower_4.png")
 	interval = 40
-
-	def __init__(self, pos):
-		Tower.__init__(self, pos)
-		self._animate = 10
+	_animate = 10
 
 	def fire(self):
 		bullets.add(Bullet(self._pos, 0, 5))
@@ -415,7 +412,7 @@ class Ext(Tower):
 		bullets.add(Bullet(self._pos, 180, 5))
 		bullets.add(Bullet(self._pos, 270, 5))
 
-class Player():
+class Player(object):
 	_respawn_delay = -1
 
 	def __init__(self, settings, pos):
