@@ -1,0 +1,26 @@
+Code and stupidity
+==================
+Sanfred Blomberg and Carl Drougge
+
+Graphics
+========
+
+Red Car (top-down)
+Author: sheikh_tuhin (qubodup remix)
+(Submitted by qubodup)
+http://opengameart.org/content/red-car-top-down
+(We made it white and applied colours to it.)
+
+Other graphics by us.
+
+Sounds
+======
+
+Race Start Beeps
+Author: Ulrich Metzner (remixed by qubodup)
+(Submitted by qubodup)
+from http://opengameart.org/content/race-start-beeps
+License: CC BY-SA 3.0
+	https://creativecommons.org/licenses/by-sa/3.0/
+
+Other stupid sounds by us.
