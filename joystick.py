@@ -68,7 +68,6 @@ verdana48 = pygame.font.SysFont("Verdana", scaled(48), True)
 
 if not pygame.mixer: print('Warning, sound disabled')
 pygame.mixer.init(44100, -16, 2, 2048)
-_snd_beep = pygame.mixer.Sound("beep.wav")
 _snd_bump = pygame.mixer.Sound("bump.wav")
 _snd_shot = pygame.mixer.Sound("shot.wav")
 _snd_death = pygame.mixer.Sound("trollandi_death.wav")
@@ -221,6 +220,7 @@ class Car(Sprite):
 		self._light, = imgload(["light.png"], rect_instead_of_mask=True)
 		self._backlight, = imgload(["backlight.png"], rect_instead_of_mask=True)
 		self._first_goal = self._next_goal = (first_goal + 1) % 4
+		self._snd_beep = pygame.mixer.Sound("beep.wav")
 
 	def _colourize(self, color): # dat spelling
 		imgs = []
@@ -253,7 +253,7 @@ class Car(Sprite):
 	def kill(self):
 		Sprite.kill(self)
 		if self._beeping:
-			_snd_beep.stop()
+			self._snd_beep.stop()
 
 	def update(self):
 		if self._health <= 0:
@@ -284,14 +284,14 @@ class Car(Sprite):
 				self._speed = -self.reverse_speed
 				if not self._beeping:
 					self._beeping = True
-					_snd_beep.play(-1)
+					self._snd_beep.play(-1)
 				self._accel = 0
 			else:
 				pass # Stop before you reverse!
 		else:
 			if self._beeping:
 				self._beeping = False
-				_snd_beep.stop()
+				self._snd_beep.stop()
 
 		self._speed += self._accel
 		if(self._speed > self.max_speed):
