@@ -1,7 +1,7 @@
 game:
   name: "Bilspelsgråtta!!1"
 players:
-  - name: fubar
+  - name: PS3
     car: SportyCar
     color: [0,255,0]
     joystick:
@@ -11,9 +11,9 @@ players:
       retard_axis: 12
       reverse_button: 15
       fire_button: 14
-  - name: derpaherp
-    car: CheapCar
-    color: [0,0,255]
+  - name: fejk-PS3
+    car: SportyCar
+    color: [100,100,255]
     joystick:
       joystick_id: 1
       turn_axis: 0
@@ -21,3 +21,23 @@ players:
       retard_axis: 12
       reverse_button: 15
       fire_button: 14
+  - name: transparent
+    car: SportyCar
+    color: [255,0,255]
+    joystick:
+      joystick_id: 3
+      turn_axis: 0
+      accelerate_axis: 3
+      retard_axis: 2
+      reverse_button: 5
+      fire_button: 4
+  - name: kexlåda
+    car: SportyCar
+    color: [255,255,0]
+    joystick:
+      joystick_id: 2
+      turn_axis: 0
+      accelerate_axis: 5
+      retard_axis: 2
+      reverse_button: 2
+      fire_button: 0
