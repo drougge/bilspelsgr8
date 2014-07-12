@@ -446,6 +446,9 @@ class Ext(Tower):
 		bullets.add(Bullet(self._pos, 180, 5))
 		bullets.add(Bullet(self._pos, 270, 5))
 
+	def bump(self, _, __):
+		print("EXTBUMP!")
+
 class Player(object):
 	_respawn_delay = -1
 
@@ -588,13 +591,13 @@ while not done:
 	for _ in range(3):
 		for b in bullets:
 			b.update()
-		for c in cars:
+		for c in list(cars) + map_towers:
 			for b in pygame.sprite.spritecollide(c, bullets, True, collcmp):
 				c.bump(15, _snd_shot)
 	for thing in things:
 		thing.draw(screen)
 
-	for e in cars:
+	for e in list(cars) + map_towers:
 		for c in pygame.sprite.spritecollide(e, cars, False, collcmp):
 			if c is not e:
 				c.bump(5, _snd_bump)
