@@ -61,7 +61,7 @@ else:
 		return r
 
 screen = pygame.display.set_mode(scaled([1600, 1200]), args.fullscreen)
-pygame.display.set_caption(settings['game']['name'])
+pygame.display.set_caption(settings['game']['name'].encode('utf-8')) # stupid pygame
 verdana16 = pygame.font.SysFont("Verdana", scaled(16), True)
 
 if not pygame.mixer: print('Warning, sound disabled')
@@ -426,7 +426,7 @@ class Player():
 		self._mk_car = partial(car_type, car_positions[pos], pos, self)
 		self.car = self._mk_car()
 		cars.add(self.car)
-		s = "%s (%d %%), lap %d of 3" % (self.name, 100, self._lap)
+		s = u"%s (%d %%), lap %d of 3" % (self.name, 100, self._lap)
 		render = verdana16.render(s, True, self.color)
 		text_positions = {
 			0: [10, 10],
@@ -437,7 +437,7 @@ class Player():
 		self._draw = partial(screen.blit, dest=text_positions[pos])
 	
 	def draw(self):
-		s = "%s (%d %%), lap %d of 3" % (self.name, self.car._health, self._lap)
+		s = u"%s (%d %%), lap %d of 3" % (self.name, self.car._health, self._lap)
 		render = verdana16.render(s, True, self.color)
 		self._draw(render)
 
