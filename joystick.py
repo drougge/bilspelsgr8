@@ -409,10 +409,15 @@ class Stopwatch(pygame.sprite.Sprite):
 	def update(self):
 		self._time += 1
 	def draw(self):
-		ticks = self._time % 60
-		seconds = (self._time % (60*60)) // 60
-		minutes = self._time // (60*60)
-		s = "%2d:%02d.%02d" % (minutes, seconds, ticks)
+		t = abs(self._time)
+		ticks = t % 60
+		seconds = (t % (60*60)) // 60
+		minutes = t // (60*60)
+		if self._time < 0:
+			sign = "-"
+		else:
+			sign = " "
+		s = "%s%2d:%02d.%02d" % (sign, minutes, seconds, ticks)
 		render = verdana16.render(s, True, self.color)
 		self._draw(render)
 
