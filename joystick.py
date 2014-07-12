@@ -75,6 +75,8 @@ _snd_death = pygame.mixer.Sound("trollandi_death.wav")
 _snd_hispeed = pygame.mixer.Sound("hispeed.wav")
 _snd_midspeed = pygame.mixer.Sound("midspeed.wav")
 _snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
+_snd_prestart = pygame.mixer.Sound("prestart.ogg")
+_snd_start = pygame.mixer.Sound("start.ogg")
 
 global things
 _images = {}
@@ -257,6 +259,8 @@ class Car(Sprite):
 			self.try_set_rotate((self._rot + self._turn) % 360)
 
 		accel_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2
+		if start_countdown > 0:
+			accel_value = 0
 		retard_value = (1+self.J.get_axis(self.j['retard_axis']))/2
 		if accel_value > 0.5 and retard_value > 0.5:
 			self._health -= .1
@@ -392,7 +396,7 @@ class Effect(pygame.sprite.Sprite):
 		self.image.set_alpha(alpha)
 
 class Stopwatch(pygame.sprite.Sprite):
-	_time = 0
+	_time = -300
 	color = (255, 255, 255)
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
@@ -538,9 +542,23 @@ things = [cars, bullets, towers, effects]
 
 sw = Stopwatch()
 
+TICKS = 60
+
+start_countdown = 5*TICKS
+
 done = False
 while not done:
 	screen.fill((0, 0, 0))
+
+	if start_countdown >= 0:
+		start_countdown -= 1
+	if start_countdown == 2*TICKS or start_countdown == 1*TICKS:
+		_snd_prestart.play()
+	if start_countdown == 0:
+		_snd_start.play()
+		effects.add(Effect([800, 600], u"GO!", 300, (255,255,255), font=verdana48))
+	elif start_countdown % TICKS == 0:
+		effects.add(Effect([800, 600], str(start_countdown//TICKS), 30, (255,255,255), font=verdana48))
 
 	sw.update()
 	sw.draw()
@@ -577,7 +595,7 @@ while not done:
 				c.bump(5, _snd_bump)
 
 
-	clock.tick(60)
+	clock.tick(TICKS)
 	pygame.display.flip()
 
 print("Why you quit already? :(")
