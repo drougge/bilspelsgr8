@@ -63,6 +63,7 @@ else:
 screen = pygame.display.set_mode(scaled([1600, 1200]), args.fullscreen)
 pygame.display.set_caption(settings['game']['name'].encode('utf-8')) # stupid pygame
 verdana16 = pygame.font.SysFont("Verdana", scaled(16), True)
+verdana48 = pygame.font.SysFont("Verdana", scaled(48), True)
 
 if not pygame.mixer: print('Warning, sound disabled')
 pygame.mixer.init(44100, -16, 2, 2048)
@@ -312,7 +313,7 @@ class Car(Sprite):
 		if map_goals[self._next_goal].overlap(self.mask, map(int, self._pos)):
 			self._next_goal = (self._next_goal + 1) % 4
 			if self._next_goal == self._first_goal:
-				self.player._lap += 1
+				self.player.complete_lap()
 
 	def draw_light(self, surface):
 		visible, rect = self._light[self._rot]
@@ -335,6 +336,10 @@ class Car(Sprite):
 		self._speed = 0
 		self._move = [0, 0]
 
+	def win(self):
+		self._imgs = imgload(self._sprite_filenames) # white car
+		self._health = 100
+
 class SportyCar(Car):
 	max_speed = 10
 	reverse_speed = 1
@@ -352,17 +357,20 @@ class CheapCar(Car):
 car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) and Car in t.mro() and t is not Car}
 
 class Effect(pygame.sprite.Sprite):
-	def __init__(self, pos, text, lifetime, color):
+	def __init__(self, pos, text, lifetime, color, font=verdana16):
 		pygame.sprite.Sprite.__init__(self)
 		self._pos = pos = scaled(pos)
 		self._lifetime = lifetime
-		render = verdana16.render(text, True, color, (0, 0, 0))
-		self.rect = render.get_rect(left=pos[0], top=pos[1])
+		render = font.render(text, True, color, (0, 0, 0))
+		rect = render.get_rect()
+		self.rect = render.get_rect(left=pos[0] - rect.width // 2, top=pos[1] - rect.height // 2)
 		self.image = render
 		self.image.set_alpha(255)
 		self.image.set_colorkey((0, 0, 0))
 	def update(self):
-		step = 255/self._lifetime
+		if not self._lifetime:
+			return
+		step = 255 / self._lifetime
 		alpha = self.image.get_alpha() - step
 		if alpha <= 0:
 			self.kill()
@@ -451,6 +459,16 @@ class Player(object):
 	def respawn_soon(self):
 		self._respawn_delay = 300
 
+	def complete_lap(self):
+		self._lap += 1
+		if self._lap == 4:
+			global winner
+			if not winner:
+				winner = self
+				effects.add(Effect([800, 600], u"%s wins!" % (self.name, ), 0, self.color, font=verdana48))
+			self.car.win()
+			self.color = (255, 255, 255)
+
 def load_goals(name, size):
 	goals = []
 	with open(name, "r") as fh:
@@ -487,6 +505,7 @@ def load_cars(name):
 screen.fill((0, 0, 0))
 pygame.display.flip()
 background, map_mask, map_goals, map_towers, car_positions = load_map(args.map)
+winner = False
 
 cars = pygame.sprite.RenderClear([])
 effects = pygame.sprite.RenderClear([])
@@ -500,7 +519,7 @@ players = []
 for pos, player in enumerate(settings['players']):
 	players.append(Player(player, pos))
 
-things = [cars, effects, bullets, towers]
+things = [cars, bullets, towers, effects]
 
 sw = Stopwatch()
 
