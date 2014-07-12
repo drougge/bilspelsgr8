@@ -136,7 +136,7 @@ class Sprite(pygame.sprite.Sprite):
 	def _newimg(self, force=False):
 		if self._animate:
 			self._anim += 1
-		if force or self._animate is self._anim:
+		if force or (self._animate <= self._anim and self._animate):
 			self._anim = 0
 			self._cur_img += 1
 			self._cur_img %= len(self._imgs)
@@ -423,6 +423,7 @@ class Stopwatch(pygame.sprite.Sprite):
 
 class Tower(Sprite):
 	_timer = 0
+
 	def __init__(self, pos):
 		x = pos[0]
 		y = pos[1]
@@ -432,13 +433,15 @@ class Tower(Sprite):
 		Sprite.update(self)
 		self._timer += 1
 		if self._timer >= self.interval and start_countdown <= 0:
-			self._animate = 10
+			if self._animate == 0:
+				self._animate = 10
 			self._timer = 0
 			self.fire()
 
 class Ext(Tower):
 	_sprite_filenames = ("exttower_1.png", "exttower_2.png", "exttower_3.png", "exttower_4.png")
 	interval = 40
+	_rapidfire = 0
 
 	def fire(self):
 		bullets.add(Bullet(self._pos, 0, 5))
@@ -446,8 +449,19 @@ class Ext(Tower):
 		bullets.add(Bullet(self._pos, 180, 5))
 		bullets.add(Bullet(self._pos, 270, 5))
 
+	def update(self):
+		Tower.update(self)
+		if self._rapidfire > 0:
+			self._rapidfire -= 1
+		elif self.interval == 12:
+			self.interval = 40
+			self._animate = 10
+
 	def bump(self, _, __):
 		print("EXTBUMP!")
+		self._rapidfire = 60
+		self.interval = 12
+		self._animate = 3
 
 class Player(object):
 	_respawn_delay = -1
