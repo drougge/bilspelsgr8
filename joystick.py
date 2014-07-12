@@ -216,6 +216,7 @@ class Car(Sprite):
 		self.j=player.joystick # Joystick settings
 		self.J=joysticks[self.j['joystick_id']] # (pygame) Joystick object
 		self._light, = imgload(["light.png"], rect_instead_of_mask=True)
+		self._backlight, = imgload(["backlight.png"], rect_instead_of_mask=True)
 		self._first_goal = self._next_goal = (first_goal + 1) % 4
 
 	def _colourize(self, color): # dat spelling
@@ -316,10 +317,10 @@ class Car(Sprite):
 			if self._next_goal == self._first_goal:
 				self.player.complete_lap()
 
-	def draw_light(self, surface):
-		visible, rect = self._light[self._rot]
+	def _draw_light(self, surface, light, dist):
+		visible, rect = light[self._rot]
 		r = radians(self._rot)
-		off = [sin(r) * 240, cos(r) * 240]
+		off = [sin(r) * dist, cos(r) * dist]
 		center = rect.center
 		blt_pos = (self._pos[0] + off[0] - center[0], self._pos[1] + off[1] - center[1], )
 		area = rect.copy()
@@ -328,6 +329,10 @@ class Car(Sprite):
 		visible = visible.copy()
 		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
 		surface.blit(visible, scaled(blt_pos))
+
+	def draw_light(self, surface):
+		self._draw_light(surface, self._light, 240)
+		self._draw_light(surface, self._backlight, -44)
 
 	def bump(self, force, sound):
 		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
