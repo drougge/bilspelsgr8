@@ -259,13 +259,13 @@ class Car(Sprite):
 			self.try_set_rotate((self._rot + self._turn) % 360)
 
 		accel_value = (1+self.J.get_axis(self.j['accelerate_axis']))/2
-		if start_countdown > 0:
-			accel_value = 0
 		retard_value = (1+self.J.get_axis(self.j['retard_axis']))/2
 		if accel_value > 0.5 and retard_value > 0.5:
 			self._health -= .1
 		axis_value = accel_value - retard_value
 		self._accel = (axis_value * (max(self.friction*1.5, self.max_accel * self._health/100))) - self.friction
+		if start_countdown > 0:
+			self._accel = 0
 
 		if self.J.get_button(self.j['fire_button']):
 			if not self._fired_last_tick:
@@ -273,8 +273,8 @@ class Car(Sprite):
 		else:
 			self._fired_last_tick = False
 
-		if((self.J.get_button(self.j['reverse_button']))):
-			if(self._speed <= 0):
+		if self.J.get_button(self.j['reverse_button']) and start_countdown <= 0:
+			if self._speed <= 0:
 				self._speed = -self.reverse_speed
 				if not self._beeping:
 					self._beeping = True
