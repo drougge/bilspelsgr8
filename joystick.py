@@ -426,14 +426,14 @@ class Tower(Sprite):
 	def update(self):
 		Sprite.update(self)
 		self._timer += 1
-		if self._timer >= self.interval:
+		if self._timer >= self.interval and start_countdown <= 0:
+			self._animate = 10
 			self._timer = 0
 			self.fire()
 
 class Ext(Tower):
 	_sprite_filenames = ("exttower_1.png", "exttower_2.png", "exttower_3.png", "exttower_4.png")
 	interval = 40
-	_animate = 10
 
 	def fire(self):
 		bullets.add(Bullet(self._pos, 0, 5))
