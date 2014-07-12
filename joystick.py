@@ -77,6 +77,7 @@ _snd_midspeed = pygame.mixer.Sound("midspeed.wav")
 _snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
 _snd_prestart = pygame.mixer.Sound("prestart.ogg")
 _snd_start = pygame.mixer.Sound("start.ogg")
+_snd_blurgh = pygame.mixer.Sound("blurgh.wav")
 
 global things
 _images = {}
@@ -462,6 +463,7 @@ class Ext(Tower):
 		self._rapidfire = 60
 		self.interval = 12
 		self._animate = 3
+		_snd_blurgh.play(2)
 
 class Player(object):
 	_respawn_delay = -1
