@@ -16,7 +16,6 @@ pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
 pygame.font.init()
 clock = pygame.time.Clock()
-collcmp = pygame.sprite.collide_mask
 
 if len(argv) > 1:
 	assert len(argv) == 2, "Specify window X size as argument."
@@ -30,6 +29,7 @@ assert screen_x_size in (640, 800, 960, 1024, 1152, 1280, 1366, 1400, 1440, 1600
 if screen_x_size == 1600:
 	def scaled(s):
 		return s
+	collcmp = pygame.sprite.collide_mask
 else:
 	def adjust_size(size):
 		return size * screen_x_size // 1600
@@ -42,6 +42,13 @@ else:
 			return adjust_size(s)
 		else:
 			return pygame.transform.smoothscale(s, map(adjust_size, s.get_size()))
+	def collcmp(a, b):
+		a.rect, a._rect = a._rect, a.rect
+		b.rect, b._rect = b._rect, b.rect
+		r = pygame.sprite.collide_mask(a, b)
+		a.rect, a._rect = a._rect, a.rect
+		b.rect, b._rect = b._rect, b.rect
+		return r
 
 screen = pygame.display.set_mode(scaled([1600, 1200]))
 pygame.display.set_caption(settings['game']['name'])
@@ -139,7 +146,8 @@ class Sprite(pygame.sprite.Sprite):
 				self._stuck = False
 			self._pos = new_pos
 		x, y = map(int, self._pos)
-		self.rect = scaled(pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2))
+		self._rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
+		self.rect = scaled(self._rect)
 
 class Car(Sprite):
 	_sprite_filenames = ("car_white.png",)
@@ -430,9 +438,8 @@ while not done:
 	for thing in things:
 		thing.draw(screen)
 
-	coll = list(cars)
-	for e in list(cars):
-		for c in pygame.sprite.spritecollide(e, coll, False, collcmp):
+	for e in cars:
+		for c in pygame.sprite.spritecollide(e, cars, False, collcmp):
 			if c is not e:
 				c.bump(5)
 
