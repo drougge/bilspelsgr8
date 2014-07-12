@@ -20,7 +20,8 @@ for cand in reasonble_x:
 
 parser = argparse.ArgumentParser(description='An amazing game with cars in a cave.')
 parser.add_argument('--xres', metavar='PIXELS', type=int, default=screen_x_size, help='Screen/window width (default %d, ideal 1600)' % (screen_x_size, ))
-parser.add_argument('--fullscreen', dest='fullscreen', action='store_const', const=pygame.FULLSCREEN, default=0, help='Run fullscreen')
+parser.add_argument('--fullscreen', action='store_const', const=pygame.FULLSCREEN, default=0, help='Run fullscreen')
+parser.add_argument('--map', type=int, default=1, help='Map number to play on')
 args = parser.parse_args()
 
 # After possibly printing help, not before
@@ -87,6 +88,15 @@ def imgload(names, step=1, rect_instead_of_mask=False):
 			_images[name] = {deg: rot(deg) for deg in range(0, 360, step or 360)}
 	return [_images[name] for name in names]
 
+def load_map(num):
+	m = "map%d" % (num,)
+	background = scaled(pygame.image.load(m + ".png").convert_alpha())
+	map_mask = pygame.image.load(m + ".mask.png")
+	map_mask.set_colorkey((255, 255, 255, ))
+	map_mask = pygame.mask.from_surface(map_mask)
+	map_goals = load_goals(m + ".goals", map_mask.get_size())
+	car_positions = load_cars(m + ".cars")
+	return background, map_mask, map_goals, car_positions
 
 class Sprite(pygame.sprite.Sprite):
 	_animate = False
@@ -414,12 +424,12 @@ class Player():
 	def respawn_soon(self):
 		self._respawn_delay = 300
 
-def load_goals(name):
+def load_goals(name, size):
 	goals = []
 	with open(name, "r") as fh:
 		for line in fh:
 			plist = [map(int, p.split()) for p in line.split(",")]
-			g = pygame.Surface(map_mask.get_size())
+			g = pygame.Surface(size)
 			g.set_colorkey((0, 0, 0))
 			pygame.draw.polygon(g, (255, 255, 255), plist)
 			goals.append(pygame.mask.from_surface(g))
@@ -437,13 +447,8 @@ def load_cars(name):
 	return cars
 
 screen.fill((0, 0, 0))
-background = scaled(pygame.image.load("map1.png").convert_alpha())
-map_mask = pygame.image.load("map1.mask.png")
-map_mask.set_colorkey((255, 255, 255, ))
-map_mask = pygame.mask.from_surface(map_mask)
-map_goals = load_goals("map1.goals")
-car_positions = load_cars("map1.cars")
 pygame.display.flip()
+background, map_mask, map_goals, car_positions = load_map(args.map)
 
 cars = pygame.sprite.RenderClear([])
 effects = pygame.sprite.RenderClear([])
