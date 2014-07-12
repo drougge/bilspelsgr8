@@ -68,6 +68,8 @@ if not pygame.mixer: print('Warning, sound disabled')
 pygame.mixer.init(44100, -16, 2, 2048)
 _snd_beep = pygame.mixer.Sound("beep.wav")
 _snd_bump = pygame.mixer.Sound("bump.wav")
+_snd_shot = pygame.mixer.Sound("shot.wav")
+_snd_death = pygame.mixer.Sound("trollandi_death.wav")
 _snd_hispeed = pygame.mixer.Sound("hispeed.wav")
 _snd_midspeed = pygame.mixer.Sound("midspeed.wav")
 _snd_lowspeed = pygame.mixer.Sound("lowspeed.wav")
@@ -234,6 +236,7 @@ class Car(Sprite):
 
 	def death(self):
 		effects.add(Effect(self._pos, "R.I.P.", 120, self.player.color))
+		_snd_death.play()
 		self.player.respawn_soon()
 		Sprite.kill(self)
 
@@ -325,9 +328,9 @@ class Car(Sprite):
 		visible.blit(background, (0, 0), area, pygame.BLEND_ADD)
 		surface.blit(visible, scaled(blt_pos))
 
-	def bump(self, force):
+	def bump(self, force, sound):
 		effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
-		_snd_bump.play()
+		sound.play()
 		self._health -= force
 		self._pos = map(sub, self._pos, self._move)
 		self._speed = 0
@@ -536,14 +539,14 @@ while not done:
 			b.update()
 		for c in cars:
 			for b in pygame.sprite.spritecollide(c, bullets, True, collcmp):
-				c.bump(15)
+				c.bump(15, _snd_shot)
 	for thing in things:
 		thing.draw(screen)
 
 	for e in cars:
 		for c in pygame.sprite.spritecollide(e, cars, False, collcmp):
 			if c is not e:
-				c.bump(5)
+				c.bump(5, _snd_bump)
 
 
 	clock.tick(60)
