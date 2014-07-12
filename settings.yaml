@@ -10,6 +10,7 @@ players:
       accelerate_axis: 13
       retard_axis: 12
       reverse_button: 15
+      fire_button: 14
   - name: derpaherp
     car: CheapCar
     color: [0,0,255]
@@ -19,3 +20,4 @@ players:
       accelerate_axis: 13
       retard_axis: 12
       reverse_button: 15
+      fire_button: 14

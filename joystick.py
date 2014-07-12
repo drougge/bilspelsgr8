@@ -91,6 +91,8 @@ def imgload(names, step=1, rect_instead_of_mask=False):
 class Sprite(pygame.sprite.Sprite):
 	_animate = False
 	_offset = (0, 0)
+	_speed = 0
+
 	def __init__(self, imgs, x, y, move=False):
 		pygame.sprite.Sprite.__init__(self)
 		self._imgs = imgload(imgs)
@@ -113,6 +115,7 @@ class Sprite(pygame.sprite.Sprite):
 	def set_speed(self, speed):
 		r = radians(self._rot)
 		self._move = [sin(r) * speed, cos(r) * speed]
+		self._speed = speed
 	def _newimg(self, force=False):
 		if self._animate:
 			self._anim += 1
@@ -141,15 +144,17 @@ class Sprite(pygame.sprite.Sprite):
 			new_pos = map(add, self._pos, self._move)
 			x, y = map(int, new_pos)
 			if map_mask.overlap(self.mask, (x - xz + xo, y - yz + yo)):
-				effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
-				_snd_bump.play()
-				self._health -= abs(self._speed)
+				if isinstance(self, Car):
+					effects.add(Effect(self._pos, "Bump!", 60, self.player.color))
+					_snd_bump.play()
+					self._health -= abs(self._speed)
+				if isinstance(self, Bullet):
+					self.kill()
 				if self._stuck:
 					new_pos = self._pos
 				else:
 					new_pos = map(sub, self._pos, self._move) # don't get stuck
 					self._stuck = True
-				self._speed = 0
 				self.set_speed(0)
 			else:
 				self._stuck = False
@@ -157,6 +162,24 @@ class Sprite(pygame.sprite.Sprite):
 		x, y = map(int, self._pos)
 		self._rect = pygame.rect.Rect(x - xz + xo, y - yz + yo, xz * 2, yz * 2)
 		self.rect = scaled(self._rect)
+
+class Bullet(Sprite):
+	_sprite_filenames = ("bullet.png",)
+
+	def __init__(self, pos, rot, speed):
+		x = pos[0]
+		y = pos[1]
+		Sprite.__init__(self, self._sprite_filenames, x, y)
+		self._rot = rot
+		self.set_speed(35 + speed)
+		self.update()
+		self.set_speed(max(2, speed * 0.7))
+
+	def update(self):
+		self.set_speed(self._speed * 0.997)
+		if self._speed < .5:
+			self.kill()
+		Sprite.update(self)
 
 class Car(Sprite):
 	_sprite_filenames = ("car_white.png",)
@@ -166,6 +189,7 @@ class Car(Sprite):
 	_health = 100
 	_beeping = False
 	_sound = None
+	_fired_last_tick = False
 
 	def __init__(self, pos, first_goal, player):
 		x = pos[0]
@@ -202,6 +226,11 @@ class Car(Sprite):
 		self.player.respawn_soon()
 		Sprite.kill(self)
 
+	def fire(self):
+		self._fired_last_tick = True
+		bullets.add(Bullet(self._pos, self._rot, self._speed))
+		print("Fire!!")
+
 	def update(self):
 		if self._health <= 0:
 			self.death()
@@ -217,6 +246,12 @@ class Car(Sprite):
 			self._health -= .1
 		axis_value = accel_value - retard_value
 		self._accel = (axis_value * (max(self.friction*1.5, self.max_accel * self._health/100))) - self.friction
+
+		if self.J.get_button(self.j['fire_button']):
+			if not self._fired_last_tick:
+				self.fire()
+		else:
+			self._fired_last_tick = False
 
 		if((self.J.get_button(self.j['reverse_button']))):
 			if(self._speed <= 0):
@@ -412,11 +447,12 @@ pygame.display.flip()
 
 cars = pygame.sprite.RenderClear([])
 effects = pygame.sprite.RenderClear([])
+bullets = pygame.sprite.RenderClear([])
 players = []
 for pos, player in enumerate(settings['players']):
 	players.append(Player(player, pos))
 
-things = [cars, effects]
+things = [cars, effects, bullets]
 
 sw = Stopwatch()
 
@@ -444,6 +480,12 @@ while not done:
 		thing.update()
 	for car in cars:
 		car.draw_light(screen)
+	for _ in range(3):
+		for b in bullets:
+			b.update()
+		for c in cars:
+			for b in pygame.sprite.spritecollide(c, bullets, True, collcmp):
+				c.bump(15)
 	for thing in things:
 		thing.draw(screen)
 
@@ -451,6 +493,7 @@ while not done:
 		for c in pygame.sprite.spritecollide(e, cars, False, collcmp):
 			if c is not e:
 				c.bump(5)
+
 
 	clock.tick(60)
 	pygame.display.flip()
