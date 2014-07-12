@@ -244,7 +244,7 @@ class Car(Sprite):
 		effects.add(Effect(self._pos, "R.I.P.", 120, self.player.color))
 		_snd_death.play()
 		self.player.respawn_soon()
-		Sprite.kill(self)
+		self.kill()
 
 	def fire(self):
 		self._fired_last_tick = True
