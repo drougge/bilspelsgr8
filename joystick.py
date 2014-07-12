@@ -2,29 +2,38 @@
 
 from __future__ import print_function, division
 
-from sys import argv
 import pygame
 import pygame.joystick
 from operator import add, sub, div
 from math import atan2, degrees, radians, sin, cos
 from functools import partial
-from workarounds import print
+import argparse
 from settings import settings
 
 pygame.init()
+dispinfo = pygame.display.Info()
+max_w, max_h = dispinfo.current_w, dispinfo.current_h
+reasonble_x = (640, 800, 960, 1024, 1152, 1280, 1366, 1400, 1440, 1600, 1920, 2048, 2560, 2880, 3200, 3840, 4096, 5120, 6400, 7680, 15360)
+for cand in reasonble_x:
+	if cand <= max_w and cand * 3 // 4 <= max_h:
+		screen_x_size = cand
+
+parser = argparse.ArgumentParser(description='An amazing game with cars in a cave.')
+parser.add_argument('--xres', metavar='PIXELS', type=int, default=screen_x_size, help='Screen/window width (default %d, ideal 1600)' % (screen_x_size, ))
+parser.add_argument('--fullscreen', dest='fullscreen', action='store_const', const=pygame.FULLSCREEN, default=0, help='Run fullscreen')
+args = parser.parse_args()
+
+# After possibly printing help, not before
+from workarounds import print
+
+screen_x_size = args.xres
+# Some sort of sanity check
+assert screen_x_size in reasonble_x, "Invalid screen size"
+
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
 pygame.font.init()
 clock = pygame.time.Clock()
-
-if len(argv) > 1:
-	assert len(argv) == 2, "Specify window X size as argument."
-	screen_x_size = int(argv[1])
-else:
-	screen_x_size = 1600
-
-# Some sort of sanity check
-assert screen_x_size in (640, 800, 960, 1024, 1152, 1280, 1366, 1400, 1440, 1600, 1920, 2048, 2560, 2880, 3200, 3840, 4096, 5120, 6400, 7680, 15360)
 
 if screen_x_size == 1600:
 	def scaled(s):
@@ -50,7 +59,7 @@ else:
 		b.rect, b._rect = b._rect, b.rect
 		return r
 
-screen = pygame.display.set_mode(scaled([1600, 1200]))
+screen = pygame.display.set_mode(scaled([1600, 1200]), args.fullscreen)
 pygame.display.set_caption(settings['game']['name'])
 verdana16 = pygame.font.SysFont("Verdana", scaled(16), True)
 
