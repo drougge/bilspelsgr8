@@ -4,10 +4,11 @@ from __future__ import print_function, division
 
 import pygame
 import pygame.joystick
-from operator import add, sub, div
+from operator import add, sub, div, mul
 from math import atan2, degrees, radians, sin, cos
 from functools import partial
 import argparse
+from colorsys import rgb_to_hls, hls_to_rgb
 from settings import settings
 
 pygame.init()
@@ -356,12 +357,19 @@ class CheapCar(Car):
 
 car_types = {t.__name__: t for t in globals().values() if isinstance(t, type) and Car in t.mro() and t is not Car}
 
+def invert(col):
+	rt = (255., 255., 255.,)
+	r, g, b = map(div, col, rt)
+	h, l, s = rgb_to_hls(r, g, b)
+	col = hls_to_rgb((h + 0.5) % 1.0, l, s)
+	return map(int, map(mul, col, rt))
+
 class Effect(pygame.sprite.Sprite):
 	def __init__(self, pos, text, lifetime, color, font=verdana16):
 		pygame.sprite.Sprite.__init__(self)
 		self._pos = pos = scaled(pos)
 		self._lifetime = lifetime
-		render = font.render(text, True, color, (0, 0, 0))
+		render = font.render(text, True, invert(color), (0, 0, 0))
 		rect = render.get_rect()
 		self.rect = render.get_rect(left=pos[0] - rect.width // 2, top=pos[1] - rect.height // 2)
 		self.image = render
